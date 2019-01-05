@@ -20,20 +20,20 @@ in the future, I want to run this program on DOSBOX(& TP7).
 ### Basic feature
 Edit Picture:   640X400 16color  
 Edit Animation: 320X200 16color (on EMS frames)  
-Mix 2Animation: 320X200 32color IFF(ILBM) pictures  
+Mix 2Animation: to 320X200 32color IFF(ILBM) pictures  
 
-Add feature from 'Deluxe Paint III'  
-- input&output Amiga IFF(ILBM) format pictures  
-- ToolBox  
-	- line, circle, box, curve, airbrush, polygon, ...  
-- 6 Gradient fill types  
-- Symmetry draw  
-- Cut Brush  
-- Anim Brush  
-- Animation  
-	- light table  
-	- (tool) step Animation  
-- and more....  
+Add feature from 'Deluxe Paint III'
+- input&output Amiga IFF(ILBM) format pictures
+- ToolBox
+	- line, circle, box, curve, airbrush, polygon, ...
+- 6 Gradient fill types
+- Symmetry draw
+- Cut Brush
+- Anim Brush
+- Animation
+	- light table
+	- (tool) step Animation
+- and more....
 
 ### New feature
 - 3 Animation tracks  
@@ -43,6 +43,7 @@ Add feature from 'Deluxe Paint III'
 - masking  
 - tool between Animation  
 - change Brush Over/Under by keybord  
+- and more....  
 
 bult_in external Anim_gen module
 - pattern_gen (jumble of good and bad)
@@ -54,6 +55,5 @@ bult_in external Anim_gen module
 
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
 
-- and more....  
 
 
