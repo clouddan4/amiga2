@@ -22,7 +22,7 @@ Edit Picture:   640X400 16color
 Edit Animation: 320X200 16color (on EMS frames)  
 Mix 2Animation: to 320X200 32color IFF(ILBM) pictures  
 ![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
-![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.png)
+![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.gif)
 
 Add feature from 'Deluxe Paint III'
 - Load & Save Amiga IFF(ILBM) format pictures
