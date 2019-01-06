@@ -11,9 +11,9 @@ recently, UNZ(FM-TOWNS emulator) was upgrated, and can running EMM386.EXE .
 so, I can update (& bugfix) this program.   
 
 in the future, I want to run this program on DOSBOX(& TP7).  
- and, use 256color(or multiple 16color anims to mix 256color GIFAnim)  
+ and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim)  
  but I don't have VGA know-how....(T_T)  
-(once at time, I bought Delphi3.0 for windows. and, I was discouraged.)
+(once at a time, I bought Delphi3 for windows. and, I was discouraged.)
 
 ---
 
@@ -21,11 +21,12 @@ in the future, I want to run this program on DOSBOX(& TP7).
 Edit Picture:   640X400 16color  
 Edit Animation: 320X200 16color (on EMS frames)  
 Mix 2Animation: to 320X200 32color IFF(ILBM) pictures  
+![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
 
 Add feature from 'Deluxe Paint III'
-- input&output Amiga IFF(ILBM) format pictures
+- Load & Save Amiga IFF(ILBM) format pictures
 - ToolBox
-	- line, circle, box, curve, airbrush, polygon, ...
+	- line, circle, box, curve, airbrush, polygon, fill, ...
 - 6 Gradient fill types
 - Symmetry draw
 - Cut Brush
@@ -36,24 +37,36 @@ Add feature from 'Deluxe Paint III'
 - and more....
 
 ### New feature
-- 3 Animation tracks  
-	- copy, overlay, underlay, masking_mat, ...  
-- PhotoShop like Mix mode (brush on screen)  
-- screen_toon, color_tiling  
-- masking  
-- tool between Animation  
-- change Brush Over/Under by keybord  
-- and more....  
+- 3 Animation tracks
+	- copy, overlay, underlay, masking_mat, ...
+- (PhotoShop like) Mix mode (brush & screen)
+- screen_toon, color_tiling
+- masking
+- tool between Animation
+- change Brush Over/Under by keybord
+- and more....
 
-bult_in external Anim_gen module
-- pattern_gen (jumble of good and bad)
-- filter
-- deformation
-- mapping
-- particle (poor)
-- fractal (jumble of good and bad)
+built-in external Anim_geneator module
+- Pattern_GEN (jumble of good and bad)
+- Filter
+- Deformation
+- Mapping
+	- Mask-synthesis, Displace-Map, Ripple-Map
+- Particle (poor)
+- Fractal (jumble of good and bad)
 
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
+---
 
+##### near future plans
+- convert 16color sprite-map-set picture(e.g. TIC-80) <--> Anim Brush
+	- or, add to brush-mode: (sprite)map-Brush
+- Brush-angle auto align along to TOOL-path
+- Pattern_GEN: thunder-bolt anim-effect
+- Mapping: TimeDisplace-Map
+
+##### far future plans
+- built-in script engine (tiny-FORTH?)
+- Bitmap-stroke-Brush along to TOOL-path (Creature House: Expression?)
 
 
