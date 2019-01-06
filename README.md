@@ -22,6 +22,7 @@ Edit Picture:   640X400 16color
 Edit Animation: 320X200 16color (on EMS frames)  
 Mix 2Animation: to 320X200 32color IFF(ILBM) pictures  
 ![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
+![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.png)
 
 Add feature from 'Deluxe Paint III'
 - Load & Save Amiga IFF(ILBM) format pictures
@@ -58,14 +59,14 @@ built-in external Anim_geneator module
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
 ---
 
-##### near future plans
+#### near future plans
 - convert 16color sprite-map-set picture(e.g. TIC-80) <--> Anim Brush
 	- or, add to brush-mode: (sprite)map-Brush
 - Brush-angle auto align along to TOOL-path
 - Pattern_GEN: thunder-bolt anim-effect
 - Mapping: TimeDisplace-Map
 
-##### far future plans
+#### far future plans
 - built-in script engine (tiny-FORTH?)
 - Bitmap-stroke-Brush along to TOOL-path (Creature House: Expression?)
 
