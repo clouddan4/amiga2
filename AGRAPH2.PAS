@@ -64,8 +64,6 @@ var
         Stype   : smoothtype;
 
 (*-- child communicate ------------------------*)
-const
-	MPS_ID='MPS.EXE ver1.00'+#$1a;
 
 type
 	PenPatternT	= array[0..15] of word;
