@@ -25,6 +25,7 @@ Mix 2Animation: to 320X200 32color IFF(ILBM) pictures
 ![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.gif)
 
 ![TREE4](https://github.com/clouddan4/amiga2/blob/master/TREE4.gif)
+![TREE4](https://github.com/clouddan4/amiga2/blob/master/DP3_TREE.png)
 
 Add feature from 'Deluxe Paint III'
 - Load & Save Amiga IFF(ILBM) format pictures
