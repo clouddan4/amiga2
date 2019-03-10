@@ -1,122 +1,468 @@
-
-640X400(現画面)
-	frame(0,x,y)
-640X400(fix, undo)
-	frame(1,x,y)
-
-320X200(push0,pop0)
-	scrntoems((2+1)*animofset+1)
-frame320(0) → ems
-	frame320toems(0,(2+1)*animofset+1)
-
-procedure pushscreen, popscreen
-	ライトテーブルがオンの場合の scrntoems((2+1)*animofset+1)
+□まだ
+■対応済み
+-------------------
 
 
-frame320point(0,x,y)
-	ライトテーブルがオンの場合の描画画面
+640X400(現画面)		frame(0,x,y)
 
-カットブラシの保存フレーム
-	cutbrushpage := (2+1)*animofset+3
-	frame320toems(1,cutbrushpage)
+640X400(fix, undo)	frame(1,x,y)
 
-ブラシ, アニメブラシ の場合の参照フレーム
-	frame320point(1,x,y)
 
-ブラシfig, アニメブラシfig の場合の参照フレーム
-	blbrushpoint(x,y) →  frame320point(1,x,y)
+frame320point(0,x,y)	ライトテーブルがオンの場合の描画画面
+	320X200(push0,pop0)	
+		通常	scrntoems((2+1)*animofset+1)
+		lt_on	frame320toems(0,(2+1)*animofset+1)
 
-paintルーチンでの作業フレーム
-	paintframe(x,y)  (paintframe は、frame320 なので 640X400 に対応不可)
+frame320point(1,x,y)	ブラシ, アニメブラシの作業画面
+	ブラシ作業画面の退避フレーム	cutbrushpage := (2+1)*animofset+3
+		frame320toems(1,cutbrushpage)
+	□スペアブラシの退避フレーム	(2+1)*animofset+4
+		
+	アニメブラシの保存フレーム
+		AnimNo.2 ((1+1)*animofset+1～n)
 
+	ブラシfig, アニメブラシfig の場合の参照フレーム
+		blbrushpoint(x,y) →  frame320point(1,x,y)
+		現状: 小数点を上下・左右のpointに振り分け、平均をとっている
+			□3X3=9point での処理に変更
+
+paintframe(x,y)		paintルーチンでの作業フレーム
+	paintframe は、frame320 なので 640X400 に対応不可
+	→ 訂正: paintframe は、640X400 1plane 単色
+
+
+■scrntoframe320ルーチン作成が必要か？(fix0, undo0)
+	(640X400(fix, undo) の場合は、実vramにマッピングされたframe間copy)
+	frame320toframe は、frame1 しか対応していない(実vramは、frame0)
+		GRAD2.PAS に類似ルーチン有
+	■frame320toframe → frame320toframe1 に名称変更(undoバッファにコピー)
+		FRAMELIB.PAS, PGLOBAL.PAS, USR2.PAS を変更
+	■frametoframe320 → frame1toframe320 に名称変更(undoバッファからコピー)
+		FRAMELIB.PAS, PGLOBAL.PAS, USR2.PAS を変更
+	■frame320toframe0 を追加(実vramにコピー)
+		FRAMELIB.PAS を変更
+	■frame0toframe320 を追加(実vramからコピー)
+		FRAMELIB.PAS を変更
+
+
+□(2+1)*animofset+1  をライトテーブルの追加フレームとして共有して問題ないか検討する
+  (2+1)*animofset+3  ブラシ作業画面の退避フレーム
+□(2+1)*animofset+4  スペアブラシの退避フレーム	(2+1)*animofset+4
+□(2+1)*animofset+5,6,7,8 を作業画面の退避用バッファとして確保
+	実装予定のスプライトチップ・エディタでの画面退避
+
+
+
+screen0 → screen1 のコピールーチンは、paintframe と等価なバッファを new で確保
+	□どちらも共通にして、必要時に new で確保するようにすることを検討
+	USR2 に|grad塗|を追加する場合、paintframe をクリアせずに再利用する必要有り
+
+□マッピングされたEMSフレームを直接 frame320 として扱えないか検討
 
 
 ■アニムフレーム数を変えた場合、ブラシや退避フレームがズレる
 	→ setup2 で、EMSフレームの割り当てを animofset*3 以上で確保していなかった
 
-□scrntoframe320ルーチン作成が必要か？(fix0, undo0)
-	(640X400(fix, undo) の場合は、実vramにマッピングされたframe間copy)
-	frame320toframe は、frame1 しか対応していない(実vramは、frame0)
-		GRAD2.PAS に重複ルーチン有
-
 --------------------------------------------------------------------------
 
 
 ■Screen 640X400 の画像を保存するルーチンが無い
-	→ AGRAPH2.PAS の iffsave ルーチンに、640X400画像モードを追加
+	→ AGRAPH2.PAS の IFFsave ルーチンに、640X400画像モードを追加
 	そのルーチンを呼び出している uemsop.pas, picop.pas を変更
-	(640X400画像の色ソートは、picop.pas の compress1/n メニューの中)
-
-■テンポラリ画像ファイルへの入出力 >Tmp, <Tmp
-	→ PIC\TMP.IFF に上書き保存
+	(640X400画像の色-明度順ソートは、picop.pas の compress1/n メニューの中)
 
 □MAG形式画像のLoad
 	→ MPS のサンプルコードを実装してみたが、buffer=64K 以上のファイルでエラー
-	iffload のように逐次blockread のメドがつくまで保留
-
+		IFFload のように逐次blockread のメドがつくまで保留
+	■新たに ULOADER.PAS を追加して、異形式画像ローダーをまとめる
+		■AGRAPH2.PAS, UPICOP.PAS よりMAG画像のロードルーチンを削除
+	■MAG画像のロード(MPS のサンプルコード)をサポート
+		□buffer=64K より大きいファイルに対応
+			■暫定処置として、64Kサイズを超える場合は処理をスキップ
+	■FRM画像(エスキース、マルチペイント)のロードをサポート
+		直接vram0にロード不能なので、new(vramb)を中間バッファにした
+		パレットファイルがあれば読み込む
+		■パレットファイルが無い場合にエラー
+			→ loadpal でエラー判定の前に exist(pal_path) でエラー判定
+	■FRM画像のセーブをサポート、パレットファイルもセーブ
+	■iffsaveルーチンより高速なので、>tmp の処理を置換え(パレットはセーブしない)
+		■AGRAPH2.PAS にFRM画像のload&saveルーチンを移行
+			■UPICOP.PAS のルーチンを入れ替え
+			■SCREENOP.PAS のルーチンを入れ替え
+			■PGLOBAL.PAS にルーチンを追加
+				■[<],[>],[,],[.]キー割り当ての変更・追加
+				(copuanimnext, copyanimback とキーが重複するため)
+				■[6],[7]の機能を入れ替えた
+		■AGRAPH2.PAS にパレットのload&saveルーチンを移行
+			■PALOP.PAS の該当ルーチンを削除
+	□CEL画像(KISS 着せ替えのパーツ)のロードをサポート
+		□KCFファイル画像(KISS 着せ替えのパレット)のロードをサポート
+	□ARV画像(アートマスター、キャラクタツクール)のロードをサポート
+	□ZIM画像(Z's staff Kid98)のロードをサポート
+	■SMC画像(SMC-777C GEDIT)のロードをサポート
+		仮想FDDイメージからファイルを取り出す 1DDTOOL.EXE は、16bitプログラム
+			(64bitOS環境では) msdos 1DDTOOL.EXE r 仮想FDDイメージ
+		拡張子がPICのママだとX68Kの形式と区別できないので 'SMC' にリネーム
+		ボーダーカラーの設定は無視する
+	■partfilename(pathname : flnam; var dir,name,ext : flnam ) → AGRAPH2.PAS
+		■disk関連のルーチンを AGRAPH2.PAS に集約
+		■AGRAPH2.PAS から 常駐パレット, child communicate 関連を削除
 
 
 ■\PST からの include を廃止、sysbrush.inc を親ディレクトリにコピー
 
-□\PST に、リソース類を移動。(brush.ptn, tone.ptn, ... )
+■\PST に、リソース類を移動。(brush.ptn, tone.ptn, ... )
 
+■HELP で、終了(右クリック)のチャタリング (PGLOBAL.PAS  procedure help)
+	→ waitrbutton の後に offbutton を追加
+
+■PALEDIT で、パレットの fix,undo が機能していない
+	→ 機能していた
+
+
+
+□AnimNoが0と決めうちしているところを修正して、任意のAnimNoに対応させる
+□パレットの管理もAnimNoごとに行う
+	□UEMSOP.PAS も変更
+
+
+
+□トップメニューの検討 (UPAINT.PAS)
+	描画|    |    |拡大|特筆|実験|    |    |Anim|画面|色  |設定|Help|終了 ↓
+	描画|変形|加工|特筆|実験|拡大|CELL| BG |Anim|画面|色  |設定|Help|終了
+	描画|特筆|実験|図形|拡大|Brsh|CELL| BG |Anim|画面|色  |設定|Help|終了
+
+
+
+■システム設定メニューの検討 (PGLOBAL.PAS  systemset)
+	Screen| Micky| Grid | BrOfs|Brwait|AutoBr|Frm0&1|ExelBr|      | Info | Help ↓
+	Screen|Micky /BrWait/ Grid /exclBr|Br_ofs|AutoBr/Frm0&1|      | Info | Help 
+
+□exclBr(グリッドが設定された場合のブラシカットのドット調整) の再検討
+	■初期設定をONに変更、gridx <> 1 の場合のチェックを導入
+		□gridx <> 1 の場合だけではなく、gridy <> 1 もチェック
+		□それぞれで、処理を分ける(x:=x-1, y:=y-1)
+	□逆から選択された場合の調整の処理をチェック
+■アニメautoscreen で、同座標に連続してブラシを置く場合、br_wait_ON だと不便すぎる
+	→ br_wait_ON のまま、lineツールで座標を記憶させて始点と終点を一致させ描画
 ■animframe0,1 の連動をデフォルトではOFFに変更
 
 
-■[複]→[鏡]、[対]→[源]、[ M]→[⇒] に変更
-    筆|色|覆|[]|B]|A]|複|対|効| M|  ↓
-    筆|色|[]/[B/[A|源/効/Ｍ|鏡|⇒|
+
+■描画設定メニューの検討 (SUBMENU.PAS  brushprefset)
+	b-Hand|a-Hand|      |autoCt|dither| Light|      |      |      |      | Help ↓
+	BrHand/AbHand/BrNot0/-Jaggy|階調塗/dither/autoCt/塗not0/ + 縁 |透過台| Help
+
+■/BrNot0/ ブラシの色0を透過色とみなす
+	brushtype = (brover,brbeta) で切り替え
+	■アニメブラシをベタで適用したい場合の設定が、カットブラシ側にしかない
+	→こちらに移動(カットブラシ選択メニューも今後の予定で残す)
+
+■/-Jaggy| ブラシの拡大縮小処理の際、補完処理を行うかどうか
+	明度順階調画像でない場合、補完処理をOFFできるようにする
+	br_jaggy : boolean で切り替え
+		PGLOBAL.PAS blbrushpoint ルーチンを変更
+		PGLOBAL.PAS blpoint ルーチンもついでに変更
+	[yes]	バイリニア補完(デフォルト)
+	[no]	c = point(x,y)
+
+■|階調塗|  gradmaxcolor : boolean で切替え
+	[yes]	16色階調塗り(デフォルト)
+	[no]	2値化 組織的パターン(Dither配列)
+	■2値塗りの場合、カラーによっては擬似階調がほとんど無くなる
+	→ 2値塗りの場合、maxcolor を引数としてcurrentcolor,currentbgcolor振分けた
+		■systemparam,color が引数なので、maxcolorに代入すると不具合
+		→ 一時的にsystemparam,colorをバックアップして処理したあと元に戻す
+	□2値塗りの場合、currentcolorの領域を増やすため、オフセット値を加算
+		■試しに、+4 して様子をみる
+		□|明度+    | として入力可能にする
+	■'2値化 ランダム'の追加を検討	| 16階調  |2値:組織的| 2値:乱数 | で切替え
+		type gradmaxcolortype = (16col,2col_mat,2col_rnd)
+                var gradmaxcolorstyle: gradmaxcolortype
+	■現在の'2値:組織的'の参照Dither配列をBayerパターンに変更
+		http://www2.tbb.t-com.ne.jp/mark/diza.html
+		AGRAPH2.PAS の Dither を修正(Bayerパターンに準拠、似非キースと同等)
+	□'2値化 網点'の追加を検討  Dither配列を網点パターン
+		AGRAPH2.PAS に Dither2 を追加
+	□'2値化 渦巻'の追加を検討  Dither配列を渦巻パターン
+		AGRAPH2.PAS に Dither3 を追加
+	□'2値化 誤差拡散'の追加を検討
+		filllineルーチンで誤差を拡散させる一時バッファの導入に見合う効果に疑問
+		→ 次(右隣)のピクセルのみ誤差を引き継がせて効果を確認する
+	□'8階調下'の追加を検討  パレット0～ 7を8階調明度順とみなして描画
+	□'8階調上'の追加を検討  パレット8～15を8階調明度順とみなして描画
+□|階調塗|メニューの検討
+	|16階調 /8階調下/8階調上|2値Baye/2値網点/2値渦巻/2値誤差/2値乱数/明度+
+	gradmaxcolortype = 
+	  (col16,col8_dw,col8_up,col2_bay,col2_tone,col2_spin,col2_err,col2_rnd)
+	明度加算値	hilight_plus : integer
+
+■/dither/ グラデ塗りの場合、乱数でディザリングをかける
+	ditheron : real で切り替え
+	[yes]	ディザリング有(デフォルト ditheron = 0.5)
+	[no]	ディザリング無(ditheron = 0)
+	□現状0.5のディザリング乱数値を変更できるようにする
+
+■/autoCt/ 円外グラデ塗りの中心を自動に設定
+	paintautocenter: boolean で切り替え
+
+□/塗not0/ ペイント系において、選択図形内の not0 のみ対象とするモードを追加する
+	ペイント処理で、マスクカラー0 との違いは、グラデーション塗りの場合
+	□適用が限られるので、|設定| の項目で対応する
+
+□| + 縁 | ペイント処理後、外形線を既定ツールで描画する
+	□それぞれのペイントツールを選択した際に、いちいち指定させても良いかも？
+
+□グラデ塗りに、cyclic 循環数の設定
+	□(usr2)|grad塗| で実装予定なので、こちらは無くても良いかも？
+
+□透過台(ライトテーブル) back2のフレーム番号を固定に切り替え可能に
+	→ □現状の-1, -2 に追加フレームとして、emsframe (2+1)*animofset+5
+	   □emsframe (2+1)*animofset+1 と共有して問題ないか検討する
+	□画面 → 追加フレーム
+	□画面・グリッド表示 → 追加フレーム
+	□画面・パースガイド表示 → 追加フレーム
+	□画面・透視ガイド表示 → 追加フレーム
+
+
+
+□|画面|メニューの検討 (screenop.pas)
+	表W裏|表>裏|表<裏| cls | rev |x反転|y反転|180転| >tmp| <tmp| Fix |Undo |Help
+
+□|表>裏| → |表>Ov| に変更 (|表>裏| は、キーコマンドでサポート)
+□|表<裏| → |表<Ud| に変更 (|表<裏| は、キーコマンドでサポート)
+□|x反転|  fix したframe1を参照して処理
+	8bitの反転は、テーブル処理(参考:pst1.5ソース bitrev.pas)
+■テンポラリ画像ファイルへの入出力 >Tmp, <Tmp
+	→ PIC\TMP.FRM に上書き保存
+□フィルタ加工のメニューは、ここに入れられないか検討
+□模様生成(セルオートマタ等)メニューは、ここに入れられないか検討
+
+
+■[複]→[対]、[対]→[源]、[ M]→[⇒] に変更
+	筆|色|覆|[]|B]|A]|複|対|効| M|  ↓
+	筆|色|[]/[B/[A|源/効|mk|対|⇒|
 ■Tile → 網 として、階層が上のメニューを 筆|色|網 に変更
+	筆|色|網|[]/[B/[A|源/効|mk|対|⇒|
 
-■[筆] ブラシ定義ファイルの切り替え
-	const  patternfilename : string[12] = 'BRUSH.PTN';  → var
-               tonefilename    : string[12] = 'TONE.PTN';   → var
 
-■[Ｍ] 裏画面マスクの動作が逆では？(現状 0 がマスクされる)
+
+□|筆|メニューの検討
+|標準筆7種|追加筆|  |←|[]|編|反| X| Y| T|逆|替| ?
+|標準筆7種|定義筆|  |←|<<|編|反| X| Y| T|保|替| ?  BRUSH_02.PTN
+
+□|  | 編集対象の筆(lastbrush)
+□|←| 現在の筆を |  |(lastbrush) へコピー
+□|[]| 画面から|  |筆を設定
+	□筆パターンの画像を読み込む
+	□現画面をバックアップ、リストア
+□|<<| 編集対象の筆をユーザー定義へコピー  BRUSH_02.PTN
+□|編| |  |筆編集モードへ移行
+□|反| 編集対象の|  |筆を 反転
+□| X| 編集対象の|  |筆を X-Flip
+□| Y| 編集対象の|  |筆を Y-Flip
+□| T| 編集対象の|  |筆を 90°右回転
+□|逆| 標準筆7種の並びを逆にする
+	□|保| ユーザー定義筆を保存   BRUSH_02.PTN
+■|替| 筆定義ファイルの切り替え
+	const  patternfilename : string[12] = 'BRUSH.PTN';
+		→ var に変更 'BRUSH.PTN', 'BRUSH_01.PTN'
+		→ ディレクトリ下に変更 string[16] = 'PST\BRUSH.PTN'
+	■切り替え時、メニューの筆が二重に描画される
+		→ dispbrushtable で、0の部分もカラー1で埋める
+	□切り替え時、|  |筆を保護する
+■メニュー選択で '|標準筆7種|追加筆|  |' 以外の場合、現在の筆番号を維持する
+
+
+
+□|色| カラーサイクル・モード
+	□ カレントカラー → サイクル
+	□ スポイトカラー → サイクル
+	□ 一定に色循環するモード
+	□ ラインスタイルによって色循環するモード
+
+
+
+□|網|メニューの検討
+|B/ グラデ17種 /F|追加パターン|  |←|[]|編|反| X| Y| T|逆|替| ?
+|追加パターン|追加定義パターン|  |←|<<|編|反| X| Y| T|保|替| ?  TONE_02.PTN
+
+■|B/ 2色トーンパターンの bgbolor を選択
+	■|B/ bgbolorが0の場合、画面の色を保護するように変更
+		→ bgcolor=0 で、c=tempc とした(簡易解決)
+		□Brshルーチンのように、独立して処理すべき？
+	■デフォルトのbgcolor=0
+■|F/ 2色トーンパターンの fgbolor(カレントカラー)を選択
+□|  | 編集対象のパターン(lasttone)
+□|←| 現在のパターンを |  |(lasttone) へコピー
+□|[]| 画面から|  |パターンを設定
+	□網パターンの画像を読み込む
+	□(画面左上部)2色トーンパターン画像から、fgbolor,bgcolor,パターン番号を設定
+	□(画面右下部)トーンパターン画像から、|  |(lasttone) へコピー
+	□現画面をバックアップ、リストア
+□|<<| 編集対象のパターンをユーザー定義へコピー  TONE_02.PTN
+□|編| |  |パターン編集モードへ移行
+□|反| 編集対象の|  |パターンを ビット反転
+□| X| 編集対象の|  |パターンを X-Flip
+□| Y| 編集対象の|  |パターンを Y-Flip
+□| T| 編集対象の|  |パターンを 90°右回転
+□|逆| グラデ17種のパターンをビット反転(並びが逆になる)
+	□|保| ユーザー定義パターンを保存   TONE_02.PTN
+■|替| パターン定義ファイルの切り替え。現状は|Tone|と共有
+              	tonefilename    : string[12] = 'TONE.PTN';
+		→ var に変更 'TONE.PTN', 'TONE_01.PTN'
+		→ ディレクトリ下に変更 string[16] = 'PST\TONE.PTN'
+	□切り替え時、|  |パターンを保護する
+□メニュー選択で 'B/グラデ17種/F|追加パターン|  |' 以外の場合、現在の網番号を維持する
+■カレントタイルの表示が見づらい
+	→ disptiletable で、カレントタイルは枠をつけた
+
+
+□(源)|網|メニューの検討
+	□奇数行(16dot単位)を半ずらしパターン
+	□奇数列(16dot単位)を半ずらしパターン
+	□現在のパターンと|  |パターンを交互に千鳥配置
+	□2色トーンパターンのグラデパターン間ローテート
+
+
+
+□筆形状カットブラシ[] → パターンブラシ[] に変更
+	(筆ルーチンを利用したカットだと15X15になっていてタイルペイントがいまいち)
+○パターンブラシ[] 選択時
+	□全角文字選択の削除
+		□ファイルから選択した文字列をアニメパターンとする
+	□2色タイルパターンの選択を追加(IFFファイル)
+	□3色タイルパターン生成の選択を追加
+	□パターンの選択を追加(IFFファイル)
+	□パターンの選択(IFFファイル)で、アニメパターンへの対応
+	□パターンの編集
+
+
+
+○カットブラシ[B
+■selectルーチンで、通常と逆から選択するとBOXラインが見えない
+	FMMOUSE.PAS の revbox を修正(場合分けの厳密化&変数の誤代入の修正)
+	□ revxyline を2セット(select2point)でイイのでは？
+■画面が640X400の場合、320X200領域外でのカットが無効になっている
+	→SUBMUNU.PAS selectcutbrush ルーチンを修正
+□選択時の[文字列]の削除? (エミュレータでは、日本語関連キー入力が不完全 & メモリの節約)
+	□ファイルから選択できるようにする
+□現状、ems にコピーされてるブラシの数を１から複数選択可能にする
+	DeluxePaint のように、スペアブラシで十分？
+	□ブラシ→スペアブラシ間で変形アニムブラシ
+□進行方向、座標相対関係などにより、ブラシの Overlay/Underlay を切替(太陽を惑星が公転)
+□進行方向、座標相対関係などにより、ブラシの X-flip, Y-flip などを切替
+□裏画面マスクに応じて、fixscreenした画像とブラシの Overlay/Underlay を切替
+□ブラシ変形モードを追加(x_flip,y_flip,x_bend,y-bend,拡大縮小回転,四隅自由変形,...)
+	変形したブラシに新たなバッファを割当てるとバッファオーバーの可能性有
+	→ 変形フラグと変形座標のみで、いちいち毎度に変形させる。
+	□ブラシ変形をアニムブラシに変換
+□カットブラシ[B を、[回転・拡大・縮小・アニメ]に対応させるまでの暫定策を検討
+	(回転だけなら、すでに渦潮が [utrans2 (かなり複雑なオプション)] にある)
+	→ [回転・拡大・縮小・アニメ] に特化した別ルーチンを [utrans2] に用意
+
+
+
+○アニメカットブラシ[A
+□アニメブラシのカットフレーム数を選択可能にする
+
+
+
+○カットブラシ・フィギュア[Bf
+■画面が640X400の場合、320X200領域外でのカットブラシtool形状塗り([Bf)が破綻している
+	■SYSBRUSH.INC の fillline ルーチンを修正
+		real := integer*integer 演算で、real にinteger値が代入されていた
+			(integer*integer > 32k で、real < -1)
+		→ +0.001 を式に挿入 & 演算の順番を変更 (sbbrushfig, sbanimfig)
+	■scanpaint ルーチンを介さず、直接fillline ルーチン を呼んだ方が効率的では？
+		paintframe 全体マップが必要な'グラデ塗り円外' の場合分けが必要となる
+		バケツ塗りでも、scanpaint が必須なので現状通り
+□[Bf塗りの場合、x,y それぞれの繰り返し数を設定可能にする
+□line系 & Ntatall の場合は、ブラシを進行ベクトルに向けて回転変形させる
+	カットブラシに対する基準角度を任意で設定可能にする
+□line系 & continue の場合は、ブラシをビットマップストローク・ブラシに変形
+	x,y それぞれの繰り返し数を反映できるようにする
+
+
+
+■|源| メニュー名称＆並びの整理
+	色  |表画|裏画|Undo|Tile|Dist|Grad|Patn|PtCy|Brsh|Bfig|AniB|Afig    ↓
+	色  |網  |裏画/Undo/下画/転写|Grad| [] | []c| [B | [Bf| [A | [Af
+	色|網|裏/戻/下/離|[]|[B|Bf|[A|Af|  |  |  |  |  |  |  |  |階|特  
+	sbinktype = (sbfill,sbmae,sbura,sbtemp,sbtile,sbsita,sbgrad,
+	             sbpatn,sbpacy,sbbrush,sbbrushfig,sbanim,sbanimfig)     ↓
+	sbinktype = (sbfill,sbtile,sbura,sbtemp,sbsita,sbdist,sbgrad,
+	             sbpatn,sbpacy,sbbrush,sbbrushfig,sbanim,sbanimfig)
+
+■対象元[表画] 機能確認  point(x,y) と point(x,y) の効果となり、意味がない？
+	→ 削除。表画の[inc],[dec]は、一旦コピーした先を参照先として行う
+■[Dist] を [下画],[転写] に分ける
+	→ [Dist] 選択は、直接参照先を指定するようにする
+	□現在の指定が'参照先','参照元'なのか明示する
+	■[下画],[転写] で、参照元・参照先の二つのカーソルを表示
+□|Grad| に追加
+	□paint_scanline ルーチンで、始点,終点の色を拾得して始点-終点グラデ
+	□paint_scanline ルーチンで、始点,終点の色を拾得して始点-Maxcolor-終点グラデ
+□| []c| を廃止して、| [] | のメニューで選択できるようにする
+□|[]| メニューの検討
+	□基本の描画方法を選択できるようにする
+		□screen axis: 画面の位置を基準にしてタイルを並べる(デフォルト)
+		□brush axis : タイルを並べる基準となるのが、描画を開始した位置
+		□paint brush: タイルパターンを筆定義パターンとみなして描画
+□| [A | (アニメカットブラシ)選択時、アニメブラシのカットフレーム数を選択可能にする
+
+
+
+□|効| メニュー名称＆並びの整理
+	通常|平均|比明|比暗|差絶|加算|減算|乗算| inc| dec|Tone|scrn|Wr-B|AlpB|Over|Undr
+
+■| inc| dec| でブラシ側の色が +1, -1 されている
+	→ 画面側の色を +1, -1 されるように修正
+
+
+
+■|mk| メニュー名称＆並びの整理
+		Sp|Cr|Iv|bc|bD|bA|Ok| ?   ↓
+		sp/反/無|bA/bD/無|ok| ?
+
+■裏画面マスクの動作が逆では？(現状 0 がマスクされる)
 	→ 逆にした。(マスク反転して転送では手間が増えるため)
 ■裏画面マスク-デジタルでの挙動が変。maxcolorのみがマスク
 	→ プログラムミスを修正した(sysbrush.inc)
 ■裏画面マスク-アナログでの挙動が変。[比較明]が効かない、マスク対象でも描画される
 	→ プログラムミスを修正した(sysbrush.inc)
-
-■/Ｍ| メニュー名称＆並びの整理
-		Sp|Cr|Iv|bc|bD|bA|Ok| ?   ↓
-		sp/反/無|bA/bD/無|ok| ?
-□/Ｍ| 裏画面マスクに、|bX| を追加。maskに応じてオーバーレイ、アンダーレイの切り替え
+□裏画面マスクに、|bX| を追加。maskに応じてオーバーレイ、アンダーレイの切り替え
 	□メニューに空きが無いので、|ok| を削除？
-□/Ｍ| 裏画面マスクをZバッファとみなして重ね合わせをコントロール
+□裏画面マスクをZバッファとみなして重ね合わせをコントロール
+□paintframe を裏画面に転送する機能があれば便利か？検討
+	ペイントした領域を(undo で復帰させた画像にたいして)反転マスクとして利用
+	(要は、マジックワンド範囲選択のような使い方)
+	・新規転送(新規マスク範囲)
+	・裏画面とOR合成(マスク範囲に追加)
+	・裏画面から減算(マスク範囲から除外)
 
 
-
-■2色トーンパターン対象元の場合、bgbolorが0の場合画面の色を保護
-	→ bgcolor=0 で、c=tempc とした(簡易解決)
-	□Brshルーチンのように、独立して処理すべき？
-■デフォルトのbgcolor=0
-■2色トーンパターンのリバース
-	□現リバースアイテムは、トーン定義ファイルの切り替えに使って、リバースはキーで
-□2色トーンパターンのグラデパターン間ローテート
-
-
-□/複| メニュー名称＆並びの整理
+□|対| メニュー名称＆並びの整理
 	 OFF |Cycle/     |Place|Centr|X -fp|Y -fp|XY-fp| Tile| 千鳥| 市松|x分割|y分割
 	OFF :| 点対(     /中心)|x-fp /y-fp /xy-fp| Tile/x千鳥/y千鳥/ 市松(x    /y    ) 
-■[中心]選択で、[座標中心に復帰]を兼ねる
+
+■|中心)選択で、[座標中心に復帰]を兼ねる
 	→ positionchenge ルーチンを追加した
+□エッシャーパターンを追加 
+	http://www.randmax.jp/escherpattern/
+□エッシャーの反転タイリング(モーフィング)を追加
+	https://plaza.rakuten.co.jp/nakabisya/diary/201305110001/
+	https://toyokeizai.net/articles/-/8776?page=2
+
+
+|⇒| TOOL-Morph メニューの検討
+□menu1: 
+□menu2: 
+□menu3: 線型  |放物線| Trail| Step /
 
 
 
-■対象元[表画] 機能確認  point(x,y) と point(x,y) の効果となり、意味がない？
-	→ 削除。表画の[inc],[dec]は、一旦コピーした先を参照先として行う
-■/対| メニュー名称＆並びの整理
-	色  |表画|裏画|Undo|Tile|Dist|Grad|Patn|PtCy|Brsh|Bfig|AniB|Afig    ↓
-	色  /網  |裏画/Undo/下画/転写|Grad| [] | []c| [B | [Bf| [A | [Af
-	sbinktype = (sbfill,sbmae,sbura,sbtemp,sbtile,sbsita,sbgrad,
-	             sbpatn,sbpacy,sbbrush,sbbrushfig,sbanim,sbanimfig)     ↓
-	sbinktype = (sbfill,sbtile,sbura,sbtemp,sbsita,sbdist,sbgrad,
-	             sbpatn,sbpacy,sbbrush,sbbrushfig,sbanim,sbanimfig)
-■[Dist] を [下画],[転写] に分ける。
-	→ [Dist] 選択は、直接参照先を指定するようにする
-	■[下画],[転写] で、参照元・参照先の二つのカーソルを表示
+
 
 
 □ラインオプションで、N_Total の分割点ごとにエフェクトルーチンを呼べるようにする
@@ -124,21 +470,21 @@ paintルーチンでの作業フレーム
 		□先に、カットブラシでの sbbrushfig ルーチンを実装したほうが楽かも
 			□アニムブラシでの sbanimfig ルーチンを実装
 			□[C_inc],[C_dec]モード時に、ブラシの拡大縮小
-	□トゲを交互に
+	□角度をもったトゲを交互に
 	□ツルマキの発生
 	□二分木の再帰図形
-
 
 
 ○多角形
 ■di=0 の次のパラメータは何？
 	→ 回転角だった
 	■[正多],[星] で、回転角をマウス選択(or 数値入力)できるようにする
-	→ 数値入力のまま(ツール・モーフィングのため)
+	→ 数値入力のまま(TOOL-Morph のため)
 □di=0 のパラメータは、右回り 左回り のブーリアン型にして誤入力を防ぐべきか？
 □[自由]の追加
+	TOOL-Morph を考慮すること
 □di=0 のパラメータを、[自由],[正多],[星] にも適用
-	→ 数値入力として、ツールモーフに対応させる
+	→ 数値入力として、TOOL-Morphに対応させる
 ■バラの選択時、外円径を選択すると、外円径が0になるバグ
 	→ select の until → repeat 後に offbutton を追加
 	■いつのまにか外円径が0になるバグ再び
@@ -151,7 +497,7 @@ paintルーチンでの作業フレーム
 
 ○多角形ペイント
 □[自由] 、[正多]、[星]、メニューの追加 
-
+	TOOL-Morph を考慮すること
 
 □[円],[楕円] で、右回り 左回り のパラメータを追加、
 □[円],[楕円] で、回転角をマウス選択(or 数値入力)できるようにする
@@ -159,53 +505,8 @@ paintルーチンでの作業フレーム
 	□現在共有しているselectlinestyleを、line,curve,box と分ける必要がある
 
 
-□筆形状カットブラシ[] → パターンブラシ[] に変更
-	(筆ルーチンを利用したカットだと15X15になっていてタイルペイントがいまいち)
-○パターンブラシ[] 選択時
-	□全角文字選択の削除
-	□2色タイルパターンの選択を追加(IFFファイル)
-	□3色タイルパターン生成の選択を追加
-	□パターンの選択を追加(IFFファイル)
-	□パターンの選択(IFFファイル)で、アニメパターンへの対応
-	□パターンの編集
-	□ファイルから選択した文字列をアニメパターンとする
-パターンブラシ[Patn] 選択時
-	□[PtCy] を廃止して、[Patn] で選択できるようにする
 
-
-
-□グラデ塗りに、ベベルパターン(外形線より一定のグラデ)の追加
-□グラデ塗りに、cyclic 循環数の設定
-
-
-
-○カットブラシ[B
-□選択時の[文字列]の削除?
-	□ファイルから選択できるようにする
-□現状、ems にコピーされてるブラシの数を１から複数選択可能にする
-	DeluxePaint のように、スペアブラシで十分？
-	□ブラシ→スペアブラシ間で変形アニムブラシ
-□通常、not0、に追加「fix and Overlay/Underlay」
-	裏画面マスクに応じて、自動fixscreenした画像とブラシをOverlay/Underlay切替
-□対象元[Bfig] の場合、line系では、ブラシを進行ベクトルに向けて回転変形させる
-□ブラシ変形モードを追加(x_flip,y_flip,x_bend,y-bend,拡大縮小回転,四隅自由変形,...)
-	変形したブラシに新たなバッファを割当てるとバッファオーバーの可能性有
-	→ 変形フラグと変形座標のみで、いちいち毎度に変形させる。
-	□ブラシ変形をアニムブラシに変換
-
-□カットブラシ[B を、[回転・拡大・縮小・アニメ]に対応させるまでの暫定策を検討
-	(回転だけなら、すでに渦潮が [utrans2 (かなり複雑なオプション)] にある)
-	→ [回転・拡大・縮小・アニメ] に特化した別ルーチンを [utrans2] に用意
-
-
-
-○アニメカットブラシ[A 選択時
-□アニメブラシのカットフレーム数を選択可能にする
-
-
-
-□ライトテーブル back2のフレーム番号を固定に切り替え可能に
-
+□|塗| で、バケツ塗り と ブラシ塗り(グラデーション用途) を選択可能にする
 
 
 
@@ -225,6 +526,7 @@ paintルーチンでの作業フレーム
 			→ temp_gridx, temp_gridy で、前回の選択を記憶する
 		■あらためて動作確認すると、グリッドがズレる 
 			→ fmmouse.pas:  x-(x mod gridx),y-(y mod gridy) に変更
+	■sWap push0 を追加	key[w]
 ■カーソルキーで、色・タイルパターン・筆の切り替え
 	■エミュのマウスホイールを↑↓に割り当てられるのを考慮して検討
 	key[→] max_number	key[←] min_number
@@ -243,22 +545,41 @@ paintルーチンでの作業フレーム
         Key[PU] 色pset +1       Key[PD] 色pset -1
 
 
+
 ○Usr1
-■メニュー名称＆並びの整理
-	→  水引 /ボケ /砂目 |滲み |cycle|流線 /流蔓 |
+□メニュー名称＆並びの整理  |水引 /ボケ /砂目 |滲み |cycle|流線 /流蔓 |
+	→  水引/ボケ/砂目|blot|cycl|grad|集中/射光|
+
 □ブラシ形状に依存している筆ルーチンに、ブラシ選択メニューを追加
 
 □cycle で、[Ctdec=(全長)],[Ctinc=(全長)],[全長]
 
-■Hair で、[dec] の名称を [全長] として、現在値も表示
-■BRUSH.PTN の0-7の順番を逆にしたことでの不具合を修正
-	■SYSBRUSH.INC での該当ルーチンも修正
-□Hair で、total ごとに蔓を巻かせる
-□Hair と Usr2 rope を統合？
+□|grad| 画面を paintframe に転送して、ペイント・ルーチンを呼ぶ
+paintframe をクリアしないで、色々塗りを試行錯誤可能に (DigiPaint3 での Undo Redo)
+	むしろ、グラデ塗り専用ルーチンでもイイのでは？
+		□cyclic 循環数の設定は、こちらのみのルーチンで検討
+	□GRAD2.pas との住み分け
+	□画面を スキャンラインした結果を paintframe に転送
+	□画面 ← paintframe
+	□グラデ塗りに、ベベルパターン(外形線より一定のグラデ)の追加
+	□paintframe を Y-scanpaint
+
 
 
 ○Usr2
-■rope 描画モードの Over と Under を切り替え(描画途中でも、キーで切り替え可能に)
+□メニュー名称＆並びの整理
+	流線/流蔓/ひも/鎖 |水流|煙 |火炎|電撃|雨雪|雲 |星  |岩石|草葉|花 |
+	→  索/蔓/紐/鎖|水|煙|火|電|雨/雪|雲|星|石|草/葉/花|
+
+□|流蔓|の検討
+	■[dec] の名称を [全長] として、現在値も表示
+	■BRUSH.PTN の0-7の順番を逆にしたことでの不具合を修正
+		■SYSBRUSH.INC での該当ルーチンも修正
+	□total ごとに蔓を巻かせる
+	□|流蔓| と ひも を統合？
+	□一定間隔で、枝を発生するツタ
+
+■|ひも| 描画モードの Over と Under を切り替え(描画途中でも、キーで切り替え可能に)
 	→ 結局、Under の場合は、fixscreen を参照するようにした
 	自動fixscreenをやめて、手動fixscreenにした(任意の時点でコントロールできる)
 	autoscreen がキーバッファをクリアするため、同等のルーチンを組み込んだ
@@ -269,13 +590,37 @@ paintルーチンでの作業フレーム
 □スクリプト(pset,line,curve,...)をロードして、自動描画に対応
 □スクリプト内の座標を変形させてのアニメーション
 
-□一定間隔で、枝を発生するツタ
+□|煙| の再検討
+	現在の円半径増加方法を変更
+		□最小、最大半径を設定可能にする
+		□最初の座標からの距離に比例して半径を増加させる
+	現在の描画方法を変更
+		□加算 or inc で描画
+		□円内の粒子密度を正規分布にする。粒子数を設定可能にする
+	現在の描画方法に追加
+		□セル画風(Amiga_16color パレットのうち3色)
+		http://www.geocities.jp/popqjp/Tips/Smoke01.html
+		http://www.geocities.jp/popqjp/Tips/Smoke02.html
 
-□ビットマップストローク・ブラシの検討
+□|電撃| UFRACTAL 放電 の 簡易&マウスで座標指定バージョンとして実装
+	ボカシ処理、残光処理は別プログラム(UEMSOP, UFILTER)にまかせる
+	■中点変位法法による再帰分割アルゴリズム
+	■arctan関数では、-π/2～π/2までなので、場合わけが複雑
+	https://detail.chiebukuro.yahoo.co.jp:443/qa/question_detail/q1423819324
+		→ θ = 2*arctan(b/(√(a^2+b^2) + a)) を使う
+	□中点からの乱数での変位量、再帰レベルを入力可能にする
+	□筆を四角として描画。大きさを変更可能にする
+	□box, circle, ellipse に対応
+	□ランダムに分岐枝を発生させる頻度と再帰レベルを設定可能にする
+	■アニメ対応: 単純繰り返し(固定点で実行の繰り返し)
+	□アニメ対応: 単純移動(ラインの始点・終点を移動しながら実行の繰り返し)
+	□アニメ対応: ピンポン移動
 
-□画面0を paintframe に転送して、ペイント・ルーチンを呼ぶ
-	□GRAD2.pas との住み分け
-□画面0を スキャンラインした結果を paintframe に書き込み、ペイント・ルーチンを呼ぶ
+□|葉| の検討
+	□ゆらゆら揺れるアニメーション
+		親子関係をつけて根元側ほど低周波、先端ほど高周波で揺らす
+		http://www.geocities.jp/popqjp/Tips/Snake/ChildAndParents.html
+
 
 
 -----------------------------------------------------------------------------
@@ -288,15 +633,22 @@ paintルーチンでの作業フレーム
 		極座標変形で、スクロールアニメを参照して検討すること
 
 
-
-□線形変換ルーチンを再検討 (UTRANS → s\vect.pas)
-
+□正三角形の線分120度2回転によるタイリング
 
 
+□gradater.pas を変更。メニューによって処理を選択、8方向はテンキーに合わせる
+	□グラデ範囲の幅を指定可にして、その両側を 0,maxcolor に塗り分ける
+		□ワイプアニメ用マスクとして使えるように幅移動をアニメ化
 
-□UMAPPING.PAS に追加。TimeDisplace 時間置き換え After Effectsのエフェクトを参考
-
-
+□GRAD2.pas(自動グラデーション) を変更
+	□距離0の点のグラデ処理を色指定可能にする(0:現状)
+	■グラデーションModeを追加。 3: →1←
+	□グラデーションModeを追加。 スキャンラインごとのmax,minをプリスキャン
+	□グラデーションModeを追加。 中心グラデ
+		グラデ中心: 画面中心(プリセット),入力,paintframeを全スキャン
+	□画面0を スキャンXラインした結果を paintframe に書き込み
+	□画面0を スキャンYラインした結果を paintframe に書き込み
+	□UFILTERカテゴリへ移動
 
 
 ■かごめルーチンを検討 (upatgen2 → s\pt5.pas)
@@ -345,6 +697,9 @@ paintルーチンでの作業フレーム
 	□核二等分線より単純距離グラデーション・モード(ドロネー三角形分割)
 		→ 実装をあきらめた。替わりに「膜より一定距離で maxcolor->0」を実装
 	□アニメ対応	核回転, 核単振動
+	□アニメ対応	布が波打つアニメーションのようなもの
+		http://blog.higashisanmyaku.jp/?page=6
+		https://imgur.com/gallery/rEmclsS
 	□アニメ対応	ランダムウォーク
 		要素の総和が0となる配列x,yをn個用意。乱数で要素をシャッフル
 		  カウント数 mod (n+1) で、適用する細胞を選ぶ
@@ -376,7 +731,7 @@ paintルーチンでの作業フレーム
 			fix0を変換行列とみなして、画面1を変換
 			画面分割サイズに応じてスクロール
 
-□放電ラインの実装。PSTに組み込むのをやめ、UFRACTALのカテゴリに
+□放電ラインの実装。PST Usr2 |電撃|とは別物をUFRACTALのカテゴリに
 	AfterEffect での稲妻パラメータ
 		http://aep-effects.com/category1/category27/entry46.html
 	■中点変位法法による再帰分割アルゴリズム
@@ -410,6 +765,9 @@ paintルーチンでの作業フレーム
 				／ → ／＼
 	数本の色をmaxcolorで残してから、3X3ボカシの適用
 
+□diffuser.pas で、端に色がかかっている場合にゴーストが出る
+	□画面外の取り込みを端から延長した色にて処理する
+
 ■レリーフ(dif.pas)を削除(3X3 畳み込み演算フィルタで十分？)	
 	■修正して、gradater.pas or dither.pas に再組み込みを検討
 	→ dither.pas に組み込んだ
@@ -420,19 +778,57 @@ paintルーチンでの作業フレーム
 	→ dither.pas に組み込んだ
 ■dither.pas を変更。それぞれの処理をモードで選択するようにする
 	■それぞれの処理の参照を画像1にするよう変更
-
-□gradater.pas を変更。メニューによって処理を選択、8方向はテンキーに合わせる
-	□グラデ範囲の幅を指定可にして、その両側を 0,maxcolor に塗り分ける
-		□ワイプアニメ用マスクとして使えるように幅移動をアニメ化
+	■2値化 ランダム+ パターン の場合、色0をスキップする
+	■AGRAPH2.PAS に追加した、組織的Ditherパターン配列に合わせて処理を追加する
+		Dither(Bayerパターン), Dither2(網点パターン), Dither3(渦巻パターン)
+		■AGRAPH2.PAS のDITHPLOT(Bayer限定)を呼ぶのをやめて、自前で処理する
+	■'2値化 ランダム' の場合、閾値を入力可能にする ■色0をスキップする
 
 ■edge.pas を変更。8方向はテンキーに合わせる
 
 ■iir.pas を変更。8方向はテンキーに合わせる
 
+□edge2.pas を追加。任意の幅で、画像の縁取りと縁取りボカシを行う
+	■hscopy(1), 近傍1(3X3)で、point(x,y+200)の加算>0 ならば指定カラーをpset
+		指定カラーのデフォルトは maxcolor
+	元画像の外側縁取りのみ残す
+		push(0), hscopy(1), cls(0), exe, pop(0), picop:move-'not0 to mask0'
+	元画像の内側縁取りのみ残す
+		push(0), hscopy(1), cls(0), exe, pop(0), picop:move-' 0 to 切り取り'
+	□実行回数を指定可能にする
+		□指定カラーから回数ごとに color := color-1 (ただし、color > 0)
+		□指定カラーから回数ごとに color := color+1 (ただし、color <= 15)
+		□指定カラーから回数ごとに color := color*(1-回数/総回数)
+		□指定カラーから回数ごとに color := color-1, 1, color+1 の繰り返し
+	■近傍(3X3)がスクリーン座標外の処理の変更(現状:0を返す)
+		→ '近傍の値を代入'する処理に変更
+	■[T] トリミング処理を追加 (0..maxcol → maxcol, 0 と見なして処理)
 
 
 
-□正三角形の線分120度2回転によるタイリング
+
+○UTRANS
+□vect.pas 線形変換ルーチンを再検討
+
+
+
+
+○UMAPPING
+□'TimeDisplace(時間置き換え)' を追加。  After Effectsのエフェクトを参考
+
+□'Wave Map(減衰振動)' W-MAP2Z.pas を再検討
+	■scan実行で、runtime error 200。Animate実行では問題なし
+		→ iii, fnr に初期値が代入されてなかった
+		W-MAP1Z.pas, W-MAP3Z.pas も細部修正した
+	■reflection(屈折による歪量)を後から入力可能にする
+		W-MAP1Z.pas も変更
+	■'データファイルの書式'のヘルプをつける
+		W-MAP1Z.pas, W-MAP3Z.pas も変更した
+	□W-MAP1Z.pas と W-MAP2Z.pas の統合
+
+□'Wave Map 3' W-MAP3Z.pas を再検討
+	■Depth(写像の回数)を後から入力可能にする
+
 
 
 
@@ -467,6 +863,8 @@ paintルーチンでの作業フレーム
 	□あらたに masK OP を追加して、境界のボカシ等を追加
 ■[M] effect Moveに追加。-90°回転(トリム)
 	■emsop の[M] effect Move anim も合わせて変更
+■[M] effect Moveに追加。Over/Under(相手が0の場合はそのまま)+平均
+	■emsop の[M] effect Move anim も合わせて変更
 ■テンポラリ画像ファイルの入出力
 	to dark, to light は、削除(copy&effect の dec not0, inc not0 で代用)
 ■「パレットを明度順に並び替えて、色ソート」が不自然な結果になる
@@ -476,8 +874,25 @@ paintルーチンでの作業フレーム
 	■トーンカーブ処理を追加。背景の0に影響を与えずに処理
 		■UFILTER.PAS より トーンカーブ を削除
 	■Amiga DigiView の色配置を明度順に変更するルーチンを復活した
-	□TIC-80 の色配置を変換 デフォルト ←→ 明度順
-
+■PALOP.PAS に、TIC-80 のパレットを追加
+■PALOP.PAS の、サンプルパレットの名称変更
+□PALOP.PAS の、[D] が簡易版のため、'PAL\*.PAL'以外のディレクトリマスクが選択できない
+■[4] pic ->frame [5] pic<- frame を追加
+	■アニメframe の任意の二枚を差し替えれるようにする
+	→ swap frame を追加するより、swap push0 のほうが汎用的
+	■[W] sWap push0 を追加(frame320toframe0 も FRAMELIB.PAS に追加)
+		emstoframe320(0,(2+1)*animofset+1);
+		scrntoems((2+1)*animofset+1);
+		frame320toframe0(0);
+■[J] swap page を追加
+■[O] dest[=] として、[=]の場合は destination := source; (上書き準備)
+■[A] MAG画像のロードルーチンを削除
+■paint で、[6],[7] をアニメ関連で使用するため、裏画面関連とtemp画像関連キーを変更
+	[.] ->page1     [,] <- page1
+	[>] ->tmp_file  [<] <- tmp_file
+	■PGLOBAL.PAS animscreenルーチンも変更
+■[M] effect Moveに追加。組織的ディザの配分による合成
+	■emsop の[M] effect Move anim も合わせて変更
 
 
 ○EMSOP
@@ -495,11 +910,19 @@ paintルーチンでの作業フレーム
 	■UFILTER.PAS より スリット加工 を削除
 ■[M] effect Move x-flip が不具合。ソース整形時、picop に合わせたためにエンバグ
 	→ scroll, trim scroll, x-flip, y-flip を修正した 
+■[4] pic ->first  → [4] pic->frames に変更。範囲指定できるようにする
+■[X] eX color OP を追加
+	■[%] 16 ->8color [#] swap 8color を eX color OP へ移動
+■[O] dest[=] として、[=]の場合は adestination := asource; (上書き準備)
+■[M] %: srol(%) を追加。総移動量と見なしてanimframeごとの移動量を増加させる
+	■picop の[M] effect Move anim も合わせてメニューのみ変更
+■[M] effect Moveに追加した'組織的ディザの配分による合成' を、閾値を変化してアニメ
+	■WIPE.PAS の方に追加。dissolve(組織的ディザ: Bayer 配列)
 
 
 
 
-
+------------------------------------------
 
 ease：インとアウトをなめらかに
 linear：一定

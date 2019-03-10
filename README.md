@@ -2,6 +2,7 @@
  (Deluxe Paint III like) animation paint system for UNZ(FM-TOWNS emulator) 
 
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.gif)
+![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
 
 20 years ago, I used Amiga500,Amiga4000,X68000 and FM-Towns(This program).  
 Original source skelton is 'Turbo Graphics (PC-9801) by Anzai Tosihiro' and  
@@ -39,6 +40,7 @@ Add feature from 'Deluxe Paint III'
 	- light table
 	- (tool) step Animation
 - and more....
+![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
 
 ### New feature
 - 3 Animation tracks
@@ -59,7 +61,6 @@ built-in external Anim_geneator module
 - Particle (poor)
 - Fractal (jumble of good and bad)
 
-![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
 ---
 
 #### near future plans

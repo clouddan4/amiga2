@@ -7,6 +7,7 @@ procedure emsop;
 
 Implementation
 
+{$I col_op_z.pas}
 {$I wipe.pas}
 
 procedure compress( ratio : integer );
@@ -64,25 +65,23 @@ start1:
     writeln;
     writeln( '  [N] anim No.   0 -  2 : ',animno);
     writeln( '  [A] Anim frame 1 - 64 : ',animframe);
-    writeln( '  [F] anim oFset >frame : ',animofset);
-    writeln( '  [D] Dir    : ',bmaskz);
-    writeln( '  [I] source : ',asource);
-    writeln( '  [O] dest   : ',adestination);
+    writeln( '  [F] anim oFset(>frame): ',animofset);
+    writeln( '  [D] Dir     : ',bmaskz);
+    writeln( '  [I] source  : ',asource);
+    writeln( '  [O] dest [=]: ',adestination);
     writeln( '  [L] Load IFFs   [S] Save IFFs' );
     writeln('-------------------------------------');
-    writeln( '  [P] Play        [^] play 0 & 1');
-    writeln( '  [-] play rev    [V] copy reVerse ');
-    writeln( '  [=] play pinpon [T] to pingpong');
-    writeln( '  [C] Clear      ');
+    writeln( '  [P] Play        [-] play ',animno,' & 1');
+    writeln( '  [<] play rev    [V] copy to reVerse ');
+    writeln( '  [>] play pinpon [T] copy to pinpon');
+    writeln( '  [M] copy&effect [C] Clear  ');
     writeln( '  [1] copy anim   [E] Exchang anim');
-    writeln( '  [M] copy&effect');
-    writeln( '  [2] append anim [3] copy rotate');
-    writeln( '  [4] pic > first [5] pic > allframe');
+    writeln( '  [2] append anim [3] copy to rotate');
+    writeln( '  [4] pic->frames [5] pic->all_frames');
     writeln( '  [6] motion blur [7] fadeout');
-    writeln( '  [W] Wipe OP');
-    writeln( '  [Y] ex 1 color  [R] Reverse color');
+    writeln( '  [X] eX color OP [W] Wipe OP');
+    writeln( '  [Y] ex 1color   [R] Reverse color');
     writeln( '  [Z] sort color  [/] compress 1/n');
-    writeln( '  [%] 16 ->8color [J] swap 8color');
     write( 'p>');
     readln( command );
     command := upcase( command );
@@ -127,6 +126,7 @@ start1:
             end;
       'I' : begin write('Source File  : '); readln(asource) end;
       'O' : begin write('Destination File : '); readln(adestination) end;
+      '=' : adestination := asource;
       'L' : begin
               gscreen;
               readfileok := false;
@@ -202,7 +202,7 @@ start1:
               screenad(0,0);
               emstoscrn(1+animno*animofset);
             end;
-      '^' : begin
+      '-' : begin
               screenad(1,0); fixscreen;
               screenad(0,0);
               scrn0to1;
@@ -222,7 +222,7 @@ start1:
               emstoscrn(1+animno*animofset);
               emstoscrn1(1+1*animofset);
             end;
-      '-' : begin
+      '<' : begin
               screenad(1,0); fixscreen;
               screenad(0,0);
               scrn0to1;
@@ -240,7 +240,7 @@ start1:
               screenad(0,0);
               emstoscrn(1+animno*animofset);
             end;
-      '=' : begin
+      '>' : begin
               screenad(1,0); fixscreen;
               screenad(0,0);
               scrn0to1;
@@ -326,38 +326,45 @@ start1:
       'M' : begin
               write('** Source AnimNo.(0.1.2) = '); readln(mm);
               write('** Target AnimNo.(0.1.2) = '); readln(m);
-              writeln(' Q: cancel');
-              writeln('--------------------------------------');
-              writeln(' 1: 通常     2: 平均');
-              writeln(' +: 加算     -: 減算     *: 乗算');
-              writeln(' /: xor      &: and      |: or');
+              writeln('(Q: cancel) --------------------------');
+              writeln(' 1: 通常    2: 平均    E: 組織的ディザ');
+              writeln(' +: 加算    -: 減算    *: 乗算');
+              writeln(' /: xor     &: and     |: or');
               writeln(' 3: 差の絶対値     4: screen');
               writeln(' L: 比較明         K: 比較暗');
-              writeln(' A: alpha blend    W: WR blend');
+              writeln(' A: Alpha blend    W: WR blend');
               writeln('--------------------------------------');
               writeln(' O: Overlay        U: Underlay');
-              writeln(' =: overlay+平均   0: 0 to 切り取り');
+              writeln(' =: overlay+平均   \: over/under+平均');
+              writeln(' 0: 0 で切り取り   M: Mask作成');
               writeln(' H: O/U 水平change V: O/U 垂直change');
-              writeln(' B: O/U 裏画面mask M: Mask作成');
-              writeln('--------------- not0 to---------------');
+              writeln(' B: O/U 裏画面mask ');
+              writeln('--------------- (not0 to ) -----------');
               writeln(' ]: not0 to mask0  [: not0 to mask15');
               writeln(' I: inc not0       D: dec not0');
               writeln(' 5: slit x         6: slit y');
               writeln(' 7: slit x + y     8: slit x - y');
               writeln('--------------------------------------');
-              writeln(' S: Scroll   T: Sc_Trim   9: -90°trim');
-              writeln(' X: X-Flip   Y: Y-Flip     ');
+              writeln(' X: X-flip  Y: Y-flip   9: 90°(trim)');
+              writeln(' S: Srol    %: srol(%)  T: srol(Trim)');
               write  ('** Move method = '); readln(mmm); mmm := upcase(mmm);
               if mmm = 'Q' then goto start1;
               xx := 0; yy := 0;
               cx := 0; cy := 0;
               case mmm of
-            'S','T' : begin
+                'E' : begin
+                        writeln( '        0: Bayer 配列 パターン');
+                        writeln( '        1: 網点  配列 パターン');
+                        writeln( '        2: 渦巻き配列 パターン');
+                        write('ditherパターンの種類 = '); readln(cl1);
+                        write('転送元濃度 (0～15)   = '); readln(cl2)
+                      end;
+        'S','%','T' : begin
                         write('X offset = '); readln(xx);
                         write('Y offset = '); readln(yy)
                       end;
                 'M' : begin
-                        write('域値   = '); readln(cl1);
+                        write('域値color   = '); readln(cl1);
                         writeln( '    ボケ足: 1-15');
                         writeln( '    2値   : 0');
                         write('ボケ足 = '); readln(cl2);
@@ -388,133 +395,147 @@ start1:
                 writeln(i);
                 emstoscrn(i+m*animofset); hscopy(1);
                 emstoscrn(i+mm*animofset);
-                if (mmm='S') or (mmm='T') or (mmm='X') or (mmm='Y') then hscopy(1);
+                if (mmm='S') or (mmm='%') or (mmm='T') or (mmm='X') or (mmm='Y')
+                  then hscopy(1);
                 for x :=0 to maxhor do
                   for y := 0 to maxver do
-                   begin
-                     c1 := point(x,y);
-                     c2 := point(x,y+200);
-                     case mmm of
-                       '1' : ccc := c1;
-                       '2' : ccc := round((c1+c2)/2);
-                       '+' : begin
-                               ccc := c1 + c2;
-                               if ccc > 15 then ccc := 15
-                             end;
-                       '-' : begin
-                               ccc := c2 - c1;
-                               if ccc < 0 then ccc := 0
-                             end;
-                       '*' : ccc := round((c1*c2)/15);
-                       '/' : ccc := c1 xor c2;
-                       '&' : ccc := c1 and c2;
-                       '|' : ccc := c1 or c2;
-                       '3' : ccc := abs(c1-c2);
-{                       '4' : ccc := round( (15-c1)*(15-c2)/15 ); }
-                       '4' : ccc := round(15- (15-c1)*(15-c2)/15 ); 
-                       'L' : if c1 > c2 then ccc := c1
-                                        else ccc := c2;
-                       'K' : if c1 > c2 then ccc := c2
-                                        else ccc := c1;
-                       'A' : ccc := round((c1*c1+(15-c1)*c2)/15);
-                       'W' : begin
-                               ccc := c1 - 7;
-                               ccc := ccc + c2;
-                               if ccc > 15 then ccc := 15;
-                               if ccc <  0 then ccc :=  0
-                             end;
-                       'O' : if c1 = 0 then ccc := c2
-                                       else ccc := c1;
-                       'U' : if c2 = 0 then ccc := c1
+                  begin
+                    c1 := point(x,y);
+                    c2 := point(x,y+200);
+                    case mmm of
+                      'E' : begin
+                              case cl1 of
+                                0 : c :=  Dither[x mod 4 + 1][y mod 4 + 1];
+                                1 : c := Dither2[x mod 4 + 1][y mod 4 + 1];
+                                2 : c := Dither3[x mod 4 + 1][y mod 4 + 1];
+                              end;
+                              if cl2 > c then ccc := c1 else ccc := c2;
+                            end;
+                      '1' : ccc := c1;
+                      '2' : ccc := round((c1+c2)/2);
+                      '+' : begin
+                              ccc := c1 + c2;
+                              if ccc > 15 then ccc := 15
+                            end;
+                      '-' : begin
+                              ccc := c2 - c1;
+                              if ccc < 0 then ccc := 0
+                            end;
+                      '*' : ccc := round((c1*c2)/15);
+                      '/' : ccc := c1 xor c2;
+                      '&' : ccc := c1 and c2;
+                      '|' : ccc := c1 or c2;
+                      '3' : ccc := abs(c1-c2);
+{                     '4' : ccc := round( (15-c1)*(15-c2)/15 ); }
+                      '4' : ccc := round(15- (15-c1)*(15-c2)/15 ); 
+                      'L' : if c1 > c2 then ccc := c1
                                        else ccc := c2;
-                       'H' : if y < 100 then 
-                             begin
-                               if c1 = 0 then ccc := c2
-                                         else ccc := c1
-                             end else
-                             begin
-                               if c2 = 0 then ccc := c1
-                                         else ccc := c2;
-                             end;
-                       'V' : if x < 160 then 
-                             begin
-                               if c1 = 0 then ccc := c2
-                                         else ccc := c1
-                             end else
-                             begin
-                               if c2 = 0 then ccc := c1
-                                         else ccc := c2;
-                             end;
-                       'B' : begin
-                               screenad(1,0);
-                               c := point(x,y);
-                               screenad(0,0);
-                               if c = 0 then
-                               begin
-                                 if c1 = 0 then ccc := c2
-                                           else ccc := c1
-                               end else
-                               begin
-                                 if c2 = 0 then ccc := c1
-                                           else ccc := c2;
-                               end;
-                             end;
-                       'M' : if c1 >= cl1 then ccc := maxcolor
-                                          else if c1 < c then ccc := 0 
-                                                         else ccc := c1;
-                       '=' : if c1 = 0 then ccc := c2
-                                       else ccc := round((c1+c2)/2);
-                       '0' : if c1 = 0 then ccc := 0
-                                       else ccc := c2;  
-                       ']' : begin
-                               if c1 <> 0 then c2 := 0;
-                               ccc := c2
-                             end;
-                       '[' : begin
-                               if c1 <> 0 then c2 := maxcolor;
-                               ccc := c2
-                             end;
-                       'I' : begin
-                               if c1 <> 0 then c2 := c2+1;
-                               if c2 > maxcolor then c2 := maxcolor;
-                               ccc := c2
-                             end;
-                       'D' : begin
-                               if c1 <> 0 then c2 := c2-1;
-                               if c2 < 0  then c2 := 0;
-                               ccc := c2
-                             end;
-                       '5' : if c1 = 0 then ccc := c2
-                                       else if odd(x+1) then ccc := c1
-                                                        else ccc := c2;
-                       '6' : if c1 = 0 then ccc := c2
-                                       else if odd(y+1) then ccc := c1
-                                                        else ccc := c2;
-                       '7' : if c1 = 0 then ccc := c2
-                                       else if odd(x+y+1) then ccc := c1
-                                                          else ccc := c2;
-                       '8' : if c1 = 0 then ccc := c2
-                                       else if odd(x-y+200) then ccc := c1
-                                                            else ccc := c2;
-                       'S' : ccc := point(((-xx+x+640) mod 320),
-                                          ((-yy+y+400) mod 200)+200);
-                       'T' : begin
-                               ccc := point(-xx+x,-yy+y+200);
-                               if ((-xx+x) < 0) or ((-xx+x) > maxhor)
-                               or ((-yy+y) < 0) or ((-yy+y) > maxver) then ccc := 0
-                             end;
-                       'X' : begin
-                               ccc := point(x,y+200);
-                               cx := maxhor -x -x
-                             end;
-                       'Y' : begin
-                               ccc := point(x,y+200);
-                               cy := maxver -y -y
-                             end;
-                     end;
-                     pset(x+cx,y+cy,ccc);
-                   end;
-                   scrntoems(i+m*animofset);
+                      'K' : if c1 > c2 then ccc := c2
+                                       else ccc := c1;
+                      'A' : ccc := round((c1*c1+(15-c1)*c2)/15);
+                      'W' : begin
+                              ccc := c1 - 7;
+                              ccc := ccc + c2;
+                              if ccc > 15 then ccc := 15;
+                              if ccc <  0 then ccc :=  0
+                            end;
+                      'O' : if c1 = 0 then ccc := c2
+                                      else ccc := c1;
+                      'U' : if c2 = 0 then ccc := c1
+                                      else ccc := c2;
+                      'H' : if y < 100 then 
+                            begin
+                              if c1 = 0 then ccc := c2
+                                        else ccc := c1
+                            end else
+                            begin
+                              if c2 = 0 then ccc := c1
+                                        else ccc := c2;
+                            end;
+                      'V' : if x < 160 then 
+                            begin
+                              if c1 = 0 then ccc := c2
+                                        else ccc := c1
+                            end else
+                            begin
+                              if c2 = 0 then ccc := c1
+                                        else ccc := c2;
+                            end;
+                      'B' : begin
+                              screenad(1,0);
+                              c := point(x,y);
+                              screenad(0,0);
+                              if c = 0 then
+                              begin
+                                if c1 = 0 then ccc := c2
+                                          else ccc := c1
+                              end else
+                              begin
+                                if c2 = 0 then ccc := c1
+                                          else ccc := c2;
+                              end;
+                            end;
+                      'M' : if c1 >= cl1 then ccc := maxcolor
+                                         else if c1 < c then ccc := 0 
+                                                        else ccc := c1;
+                      '=' : if c1 = 0 then ccc := c2
+                                      else ccc := round((c1+c2)/2);
+                      '\' : if c1 = 0 then ccc := c2
+                              else if c2 = 0 then ccc := c1
+                                             else ccc := round((c1+c2)/2);
+                      '0' : if c1 = 0 then ccc := 0
+                                      else ccc := c2;  
+                      ']' : begin
+                              if c1 <> 0 then c2 := 0;
+                              ccc := c2
+                            end;
+                      '[' : begin
+                              if c1 <> 0 then c2 := maxcolor;
+                              ccc := c2
+                            end;
+                      'I' : begin
+                              if c1 <> 0 then c2 := c2+1;
+                              if c2 > maxcolor then c2 := maxcolor;
+                              ccc := c2
+                            end;
+                      'D' : begin
+                              if c1 <> 0 then c2 := c2-1;
+                              if c2 < 0  then c2 := 0;
+                              ccc := c2
+                            end;
+                      '5' : if c1 = 0 then ccc := c2
+                                      else if odd(x+1) then ccc := c1
+                                                       else ccc := c2;
+                      '6' : if c1 = 0 then ccc := c2
+                                      else if odd(y+1) then ccc := c1
+                                                       else ccc := c2;
+                      '7' : if c1 = 0 then ccc := c2
+                                      else if odd(x+y+1) then ccc := c1
+                                                         else ccc := c2;
+                      '8' : if c1 = 0 then ccc := c2
+                                      else if odd(x-y+200) then ccc := c1
+                                                           else ccc := c2;
+                      'S' : ccc := point(((-xx+x+640) mod 320),
+                                         ((-yy+y+400) mod 200)+200);
+                      '%' : ccc := point(((-round(xx*i/animframe)+x+640) mod 320),
+                                         ((-round(yy*i/animframe)+y+400) mod 200)+200);
+                      'T' : begin
+                              ccc := point(-xx+x,-yy+y+200);
+                              if ((-xx+x) < 0) or ((-xx+x) > maxhor)
+                              or ((-yy+y) < 0) or ((-yy+y) > maxver) then ccc := 0
+                            end;
+                      'X' : begin
+                              ccc := point(x,y+200);
+                              cx := maxhor -x -x
+                            end;
+                      'Y' : begin
+                              ccc := point(x,y+200);
+                              cy := maxver -y -y
+                            end;
+                    end;
+                    pset(x+cx,y+cy,ccc);
+                  end;
+                  scrntoems(i+m*animofset);
               end;
             end;
       '2' : begin
@@ -546,8 +567,14 @@ start1:
             end;
       '4' : begin
               write(' Target AnimNo.(0.1.2) = '); readln(mm);
+              write(' first frame = '); readln(x);
+              write(' last frame = '); readln(y);
               gscreen;
-              scrntoems(1+mm*animofset);
+              for i := x to y do
+              begin
+                writeln(i);
+                scrntoems(i+mm*animofset)
+              end;
             end;
       '5' : begin
               write(' Target AnimNo.(0.1.2) = '); readln(mm);
@@ -608,6 +635,7 @@ start1:
                 scrntoems(i+m*animofset);
               end;
             end;
+      'X' : color_op_ems;
       'W' : slitwipe;
       'Y' : begin
               writeln(' Chenge Color ');
@@ -657,62 +685,6 @@ start1:
                 compress(ratio);
                 scrntoems(i+m*animofset)
               end;
-            end;
-      '%' : begin
-              gscreen;
-              for m := 1 to animframe do
-              begin
-                emstoscrn(m+animno*animofset);
-                for x := 0 to maxhor do
-                  for y := 0 to maxver do
-                  begin
-                    c := point(x,y);
-                    c1 := c mod 2;
-                    if c = 0 then c2 := 0 else
-                      case c1 of
-                        0 : if ((x+y) mod 2) = 0 then c2 := (c div 2)
-                                                 else c2 := (c div 2)-1;
-                        1 : c2 := c div 2
-                      end;
-                    pset(x,y,c2);
-                  end;
-                scrntoems(m+animno*animofset)
-              end;  
-              getRGBpalette;
-              for i := 0 to 7 do
-                for cx := 0 to 2 do
-                  palet[i,cx] := palet[i*2,cx];
-              for i := 8 to 15 do
-                for cx := 0 to 2 do
-                  palet[i,cx] := palet[i-8,cx];
-              useiffcolor;    
-            end;
-      'J' : begin
-              gscreen;
-              for m := 1 to animframe do
-              begin
-                emstoscrn(m+animno*animofset);
-                for x := 0 to maxhor do
-                  for y := 0 to maxver do
-                  begin
-                    c := point(x,y);
-                    if c <= 7 then c1 := 8 + c
-                              else c1 := c - 8;
-                    pset(x,y,c1)
-                  end;
-                scrntoems(m+animno*animofset)
-              end;  
-              getRGBpalette;
-              for i := 0 to 7 do
-                for cx := 0 to 2 do
-                begin
-                  dumyp[i,cx] := palet[i,cx];
-                  palet[i,cx] := palet[i+8,cx]
-                end;
-              for i := 8 to 15 do
-                for cx := 0 to 2 do
-                  palet[i,cx] := dumyp[i-8,cx];
-              useiffcolor;
             end;
     end;
   until command = 'Q';

@@ -295,38 +295,44 @@ end;
 procedure revbox(x1,y1,x2,y2 : integer);
 var i,xx1,yy1,xx2,yy2 : integer;
 begin
-  if (x1 <> x2) or (x1 <> x2) then
+  if (x1 <> x2) or (y1 <> y2) then
   begin
-    if x1 > x2 then
+    if x1 < x2 then
     begin
-      xx1 := x1;
-      xx2 := x2
+      if y1 < y2 then
+      begin
+        xx1 := x1; xx2 := x2;
+        yy1 := y1; yy2 := y2;
+      end else
+      begin
+        xx1 := x1; xx2 := x2;
+        yy1 := y2; yy2 := y1;
+      end
     end else
     begin
-      xx1 := x2;
-      xx2 := x1
+      if y1 < y2 then
+      begin
+        xx1 := x2; xx2 := x1;
+        yy1 := y1; yy2 := y2;
+      end else
+      begin
+        xx1 := x2; xx2 := x1;
+        yy1 := y2; yy2 := y1;
+      end
     end;
-    if y1 > y2 then
+    for i := xx1 to xx2 do
     begin
-      yy1 := y1;
-      yy2 := y2
-    end else
-    begin
-      yy1 := y2;
-      yy2 := y1
+      revpset(i,yy1);
+      revpset(i,yy2)
     end;
-    for i := x1 to x2 do
+    for i := yy1 to yy2 do
     begin
-      revpset(i,y1);
-      revpset(i,y2)
+      revpset(xx1,i);
+      revpset(xx2,i)
     end;
-    for i := y1 to y2 do
-    begin
-      revpset(x1,i);
-      revpset(x2,i)
-    end
-  end
+  end;
 end;
+
 
 procedure revxyline(x,y:integer);
 var i : integer;

@@ -23,6 +23,7 @@ uses
   uparticl,
   ufractal,
   uiff32,
+  uloader,
   upaint;
 {$O  uturtle3 }
 {$O  umapping }
@@ -35,6 +36,7 @@ uses
 {$O  uparticl }
 {$O  ufractal }
 {$O  uiff32   }
+{$O  uloader  }
 {$O  upaint   }
 var
  command,yesno : char;
@@ -58,11 +60,6 @@ begin
   TextColor(2);
   clrscr;
   window(41,1,80,24);
-  if RpalP<>nil then begin
-(*    writeln('Find resident palette. ',hexstr(seg(RpalP^)));
-    end else begin
-	writeln('Not find resident palette.'); *)
-    end;
 
   emsinit;
   frameinit;
@@ -100,6 +97,7 @@ begin
     writeln('  [P] Picture operation');
     writeln('  [Z] EMS     operation');
     writeln('  [@] anim32  operation');
+    writeln('  [L] Load other picture');
     writeln('  [!] quit   (Return to OS)');
     writeln;
     write( '>');
@@ -124,9 +122,10 @@ begin
       '8' : turtle3d;
       '9' : fractal;
       'A' : particle;
-      '@' : iff32;
       'P' : picop;
       'Z' : emsop;
+      '@' : iff32;
+      'L' : load_pics;
       '?' : checksystem;
     end;
   until (command = '!') and (yesno = 'Y');

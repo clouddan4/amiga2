@@ -45,10 +45,23 @@ type
         dithtype = array[1..4] of integer;
 
 const   Dither: array[1..4] of dithtype = (
-        (10,  4, 14,  0),
-        (14,  5,  1,  8),
-        ( 2,  9, 13,  7),
-        ( 6, 11,  3, 12));
+        ( 0,  8,  2, 10),
+        (12,  4, 14,  6),
+        ( 3, 11,  1,  9),
+        (15,  7, 13,  5));
+
+        Dither2: array[1..4] of dithtype = (
+        (11,  4,  6,  9),
+        (12,  0,  2, 14),
+        ( 7,  8, 10,  5),
+        ( 3, 15, 13,  1));
+
+        Dither3: array[1..4] of dithtype = (
+        ( 6,  7,  8,  9),
+        ( 5,  0,  1, 10),
+        ( 4,  3,  2, 11),
+        (15, 14, 13, 12));
+
 var
 	YPOSTBL		: array [0..408] of word;
 	XPOSTBL		: array [0..639] of byte;
@@ -63,26 +76,6 @@ var
         vramb   : ^vramT;
         Stype   : smoothtype;
 
-(*-- child communicate ------------------------*)
-
-type
-	PenPatternT	= array[0..15] of word;
-	TilePatternT= array[0..3,0..15] of word;
-	TonePatternT= array[0..15] of word;
-
-	SystemWorkT	= record
-		ID			: Array[0..15]of char;
-		PenPattern	: array[0..15]of PenPatternT;
-		TonePattern	: array[0..15]of TonePatternT;
-		TilePattern	: array[0..15]of TilePatternT;
-		Mask		: array[0..15]of Boolean;
-		Pen			: Byte;
-		Tone		: Byte;
-		Tile		: Byte;
-		IsMask		: boolean;
-		IsUnder		: boolean;
-	end;
-
 (*-- palette -----------------------------*)
 type
 	mcbT		= record
@@ -96,20 +89,10 @@ type
 	PaletteAtom	= array[RGBT] of byte;
 	PaletteT	= array[0..15] of PaletteAtom;
 
-	StayPalID_T	= array [0..9] of char;
-	StayPalT	= record
-		id		: StayPalID_T;
-		tone	: byte;
-		extflag	: byte;
-		MpsWork	: ^SystemWorkT;
-		palette	: PaletteT;
-	end;
 var
-	RpalP		: ^StayPalT;
 	palet           : array[0..15,0..2] of byte;
         underpalette,palettedata : PaletteT;
 const
-	Spal_ID		: StayPalID_T = 'pal98 grb'+char(0);
 	SystemPalette	: PaletteT = (
 		( 0, 0, 0),( 0, 0,12),( 0,12, 0),( 0,12,12),
 		(12, 0, 0),(12, 0,12),(12,12, 0),( 7, 7, 7),
@@ -117,15 +100,17 @@ const
 		(15, 0, 0),(15, 0,15),(15,15, 0),(15,15,15)
 	);
 (*--EMS-----------------------------------*)
-const	EMSvector = $67;			{ＥＭＭ割り込みベクトル}
+const
+	EMSvector = $67;			{ＥＭＭ割り込みベクトル}
 	EMSerr = $ff;				{ＥＭＳユニット内エラー番号}
 
-var	Emessage,				{メッセージ出力フラグ}
+var
+	Emessage,					{メッセージ出力フラグ}
 	EMSterr : boolean;			{エラー番号出力フラグ}
 	EMSerror : byte;			{エラー番号格納用}
 	EMSaddr  : pointer;			{ページアドレスデータ格納位置}
-	EMSppage,				{物理ページ数}
-	EMSlpage,				{論理ページ数}
+	EMSppage,					{物理ページ数}
+	EMSlpage,					{論理ページ数}
 	EMShandle : word;			{使用中のハンドル番号}
 
 
@@ -212,26 +197,34 @@ procedure defpaletteset(paletteset : palettet);
 function  HexStr(num:word):string;
 function  pitago(x,y:real):real;
 
-procedure EMScall(var R : registers);		{ＥＭＭファンクションコール}
-function  Eexist : boolean;			{ＥＭＳの存在を調べる}
-function  EstatOK : boolean;			{ＥＭＳのステータスを調べる}
-function  Ever : byte;				{ＥＭＳバージョンの取得}
-function  Etpage : word;			{総ページ数取得}
-function  Eupage : word;			{未使用ページ数取得}
-procedure Egetppagedata;			{物理ページデータの格納}
-function  Eppageseg(page : word) : word;	{物理ページのセグメント取得}
-procedure Egetlpage(page : word);		{論理ページの取得}
-procedure Eregetlpage(page : word);		{論理ページの割り付け変更}
-procedure Emapping(phys, logi : word);		{マッピング}
-procedure Efree;				{ＥＭＳの解放}
-function  Eread(page, offset : word) : byte;	{データ読み込み}
-procedure Ewrite(page, offset : word; data : byte);{データ書き込み}
+procedure EMScall(var R : registers);			{ＥＭＭファンクションコール}
+function  Eexist : boolean;						{ＥＭＳの存在を調べる}
+function  EstatOK : boolean;					{ＥＭＳのステータスを調べる}
+function  Ever : byte;							{ＥＭＳバージョンの取得}
+function  Etpage : word;						{総ページ数取得}
+function  Eupage : word;						{未使用ページ数取得}
+procedure Egetppagedata;						{物理ページデータの格納}
+function  Eppageseg(page : word) : word;		{物理ページのセグメント取得}
+procedure Egetlpage(page : word);				{論理ページの取得}
+procedure Eregetlpage(page : word);				{論理ページの割り付け変更}
+procedure Emapping(phys, logi : word);			{マッピング}
+procedure Efree;								{ＥＭＳの解放}
+function  Eread(page, offset : word): byte;		{データ読み込み}
+procedure Ewrite(page,offset:word; data: byte);	{データ書き込み}
 procedure emsinit;
+
+(*-- Disk    -----------------------------*)
+function exist(filename : flnam) : boolean;
+function existdir(var dir : flnam ): boolean;
+procedure partfilename(pathname : flnam; var dir,name,ext : flnam );
+function extension(pathname : flnam ) : boolean;
+procedure changedrive(drive : byte );
+function drives: integer;
 
 procedure select_drive( drv : char );
 function current_drive : char;
 procedure diskreset;
-function exist(filename : flnam) : boolean;
+function fileready( var name : flnam ) : boolean;
 
 procedure wait;
 function inkey : char;
@@ -244,7 +237,6 @@ procedure cursoron ;
 procedure cursoroff;
 procedure SystemLine(sw:byte);
 
-function fileready( var name : flnam ) : boolean;
 
 procedure SORTFILES (var Fnames: filelist; Nfiles: integer);
 procedure DISP_NAME (var Fnames: filelist; Fnum, Dispfrst, Fcolor,
@@ -261,12 +253,16 @@ procedure hscopy(n:integer);
 procedure scrn0to1;
 procedure scrn1to0;
 
+function loadpal( palettefilename : flnam) : boolean;
+function savepal(palettefilename : flnam ): boolean;
+function vramsave( name : picflnam ): boolean;
+function vramload(name : picflnam ) : boolean;
+
 procedure iffsave(fl : picflnam; sw : integer);
 procedure iffload( fl : picflnam);
 procedure useiffcolor;
 procedure useiffcolor0;
 procedure exiffcolor(i:integer);  (* i=0 320*200   i=1 640*400 *)
-procedure MagDecode(filename : picflnam);
 
 procedure textscreen;
 procedure fullscreen;
@@ -928,6 +924,75 @@ end;
 
 (* ====================================================================== *)
 (* Disk *)
+function exist(filename : flnam) : boolean;
+var
+  fil : file;
+begin
+  {$I-}
+  assign(fil,filename);
+  reset(fil);
+  close(fil);
+  {$I+}
+  exist :=( ioresult = 0 );
+end;
+
+function existdir(var dir : flnam ): boolean;
+var
+  temppath : flnam;
+begin
+  getdir(0,temppath);
+  {$i-}
+  chdir( dir );
+  {$i+}
+  existdir := (ioresult = 0);
+  chdir(temppath);
+end;
+
+procedure partfilename(pathname : flnam; var dir,name,ext : flnam );
+var
+  l,p,nameptr,extptr : integer;
+begin
+  l := length( pathname );
+  nameptr := 1;
+  for p := 1 to l do
+    if pathname[p] = '\'
+      then nameptr := p + 1;
+  dir := copy(pathname, 1, nameptr - 1 );
+  extptr := l + 1;
+  for p := nameptr to l do
+    if pathname[p] = '.' then
+      extptr := p;
+  name := copy(pathname, nameptr, extptr - nameptr );
+  ext  := copy(pathname, extptr + 1, 3 );
+end;
+
+function extension(pathname : flnam ) : boolean;
+var
+  dir,name,ext : flnam;
+begin
+  partfilename( pathname, dir, name, ext );
+  extension := not( ext = '' );
+end;
+
+procedure changedrive(drive : byte );
+var
+  directory : flnam;
+begin
+  getdir( drive,directory );
+  chdir( directory );
+end;
+
+function drives: integer;
+var
+  r : regtypefl;
+begin
+  r.ax := $0E00;
+  r.dx := $00FF;
+  msdos(r);
+  drives := r.ax and $FF;
+end;
+
+
 procedure select_drive( drv : char );
  var
   i : integer;
@@ -960,18 +1025,43 @@ begin
 
 end;
 
-function exist(filename : flnam) : boolean;
+function fileready( var name : flnam ) : boolean;
 var
-  fil : file;
+  drive : CHAR;
+  ext : string[4];
+  p : integer;
+  inpname,mask : flnam;
 begin
-  {$I-}
-  assign(fil,filename);
-  reset(fil);
-  close(fil);
-  {$I+}
-  exist :=( ioresult = 0 );
+  drive := 'p';
+  p := pos('.',name);
+  if p > 0
+    then ext := copy( name,p,4 )
+    else ext := '';
+  if ext = ''
+    then mask := drive + '\*.*'
+    else mask := drive + '\*' + ext ;
+  file_select( mask,inpname );
+  if inpname <> '' then
+    begin
+{      if pos( ':',inpname ) = 0 then
+        inpname := drive + '\' + inpname; }
+      if pos( '.',inpname ) = 0 then
+        inpname := inpname + ext;
+      if exist( inpname ) then
+        begin
+          fileready := true;
+          name := inpname;
+        end
+      else
+        begin
+          writeln( inpname,' is not exist.' );
+          fileready := false;
+          wait
+        end
+    end
+  else
+    fileready := false;
 end;
-
 
 
 procedure wait;
@@ -1329,43 +1419,7 @@ end; { procedure FILE_SELECT }
 
 
 
-function fileready( var name : flnam ) : boolean;
-var
-  drive : CHAR;
-  ext : string[4];
-  p : integer;
-  inpname,mask : flnam;
-begin
-  drive := 'p';
-  p := pos('.',name);
-  if p > 0
-    then ext := copy( name,p,4 )
-    else ext := '';
-  if ext = ''
-    then mask := drive + '\*.*'
-    else mask := drive + '\*' + ext ;
-  file_select( mask,inpname );
-  if inpname <> '' then
-    begin
-{      if pos( ':',inpname ) = 0 then
-        inpname := drive + '\' + inpname; }
-      if pos( '.',inpname ) = 0 then
-        inpname := inpname + ext;
-      if exist( inpname ) then
-        begin
-          fileready := true;
-          name := inpname;
-        end
-      else
-        begin
-          writeln( inpname,' is not exist.' );
-          fileready := false;
-          wait
-        end
-    end
-  else
-    fileready := false;
-end;
+
 
 (*=====================================================================*)
 (* EMS op *)
@@ -1382,35 +1436,35 @@ begin
 
   Emapping(1,2*i-1);
   Emapping(2,2*i);
-    mem[$c000:$ff81] := $1;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(1,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $42;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(1,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    j := 0;
-    mem[$c000:$ff81] := $84;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(2,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $c8;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(2,j,vram0[yp,xp]);
-            inc(j)
-      end;
+  mem[$c000:$ff81] := $1;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(1,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $42;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(1,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  j := 0;
+  mem[$c000:$ff81] := $84;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(2,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $c8;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(2,j,vram0[yp,xp]);
+      inc(j)
+    end;
 end;
 
 procedure scrn1toems( i : integer);
@@ -1425,35 +1479,35 @@ begin
 
   Emapping(1,2*i-1);
   Emapping(2,2*i);
-    mem[$c000:$ff81] := $1;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(1,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $42;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(1,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    j := 0;
-    mem[$c000:$ff81] := $84;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(2,j,vram0[yp,xp]);
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $c8;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            Ewrite(2,j,vram0[yp,xp]);
-            inc(j)
-      end;
+  mem[$c000:$ff81] := $1;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(1,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $42;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(1,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  j := 0;
+  mem[$c000:$ff81] := $84;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(2,j,vram0[yp,xp]);
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $c8;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      Ewrite(2,j,vram0[yp,xp]);
+      inc(j)
+    end;
 end;
 
 procedure emstoscrn(i:integer);
@@ -1467,37 +1521,37 @@ begin
   j  := 0;
   Emapping(1,2*i-1);
   Emapping(2,2*i);
-    test1 := memw[seg(EMSaddr^):ofs(EMSaddr^)];
-    test2 := memw[seg(EMSaddr^):ofs(EMSaddr^)+4];
-    mem[$c000:$ff81] := $1;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test1:j];
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $42;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test1:j];
-            inc(j)
-      end;
-      j := 0;
-    mem[$c000:$ff81] := $84;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test2:j];
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $c8;
-    for yp := 0 to 199 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test2:j];
-            inc(j)
-      end;
+  test1 := memw[seg(EMSaddr^):ofs(EMSaddr^)];
+  test2 := memw[seg(EMSaddr^):ofs(EMSaddr^)+4];
+  mem[$c000:$ff81] := $1;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test1:j];
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $42;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test1:j];
+      inc(j)
+    end;
+  j := 0;
+  mem[$c000:$ff81] := $84;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test2:j];
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $c8;
+  for yp := 0 to 199 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test2:j];
+      inc(j)
+    end;
  end;
 
 procedure emstoscrn1(i:integer);
@@ -1511,41 +1565,40 @@ begin
   j  := 0;
   Emapping(1,2*i-1);
   Emapping(2,2*i);
-    test1 := memw[seg(EMSaddr^):ofs(EMSaddr^)];
-    test2 := memw[seg(EMSaddr^):ofs(EMSaddr^)+4];
-    mem[$c000:$ff81] := $1;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test1:j];
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $42;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test1:j];
-            inc(j)
-      end;
-      j := 0;
-    mem[$c000:$ff81] := $84;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test2:j];
-            inc(j)
-      end;
-    mem[$c000:$ff81] := $c8;
-    for yp := 200 to 399 do
-      for xp := 0 to 39 do
-        begin
-            vram0[yp,xp] := mem[test2:j];
-            inc(j)
-      end;
+  test1 := memw[seg(EMSaddr^):ofs(EMSaddr^)];
+  test2 := memw[seg(EMSaddr^):ofs(EMSaddr^)+4];
+  mem[$c000:$ff81] := $1;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test1:j];
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $42;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test1:j];
+      inc(j)
+    end;
+  j := 0;
+  mem[$c000:$ff81] := $84;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test2:j];
+      inc(j)
+    end;
+  mem[$c000:$ff81] := $c8;
+  for yp := 200 to 399 do
+    for xp := 0 to 39 do
+    begin
+      vram0[yp,xp] := mem[test2:j];
+      inc(j)
+    end;
  end;
 
 procedure hscopy(n:integer);
-
 var
   xp,yp,xxp,dxb,dyb:integer;
 begin
@@ -1566,60 +1619,51 @@ begin
         end
   end;
 
-  for xxp := 0 to 3 do begin
+  for xxp := 0 to 3 do
+  begin
     case xxp of
-      0 :  begin
-             mem[$c000:$ff81] := $1;
-           end;
-      1 :  begin
-             mem[$c000:$ff81] := $42;
-           end;
-      2 :  begin
-             mem[$c000:$ff81] := $84;
-           end;
-      3 :  begin
-             mem[$c000:$ff81] := $c8;
-           end;
+      0 :  mem[$c000:$ff81] := $1;
+      1 :  mem[$c000:$ff81] := $42;
+      2 :  mem[$c000:$ff81] := $84;
+      3 :  mem[$c000:$ff81] := $c8;
     end;
     for yp := 0 to 199 do
-
       for xp := 0 to 39 do
-        begin
-          vram0[yp+dyb,xp+dxb] := vram0[yp,xp];
-        end;
+      begin
+        vram0[yp+dyb,xp+dxb] := vram0[yp,xp];
       end;
- end;
+  end;
+end;
 
 
 procedure scrn0to1;
 begin
-
   new(vramb);
   screenad(0,0);
 
-              mem[$c000:$ff81] := $1;
-              vramb^ := vram0;
-              screenad(1,1);
-              mem[$c000:$ff81] := $1;
-              vram0 := vramb^;
-              screenad(0,0);
-              mem[$c000:$ff81] := $42;
-              vramb^ := vram0;
-              screenad(1,1);
-              mem[$c000:$ff81] := $42;
-              vram0 := vramb^;
-              screenad(0,0);
-              mem[$c000:$ff81] := $84;
-              vramb^ := vram0;
-              screenad(1,1);
-              mem[$c000:$ff81] := $84;
-              vram0 := vramb^;
-              screenad(0,0);
-              mem[$c000:$ff81] := $c8;
-              vramb^ := vram0;
-              screenad(1,1);
-              mem[$c000:$ff81] := $c8;
-              vram0 := vramb^;
+  mem[$c000:$ff81] := $1;
+  vramb^ := vram0;
+  screenad(1,1);
+  mem[$c000:$ff81] := $1;
+  vram0 := vramb^;
+  screenad(0,0);
+  mem[$c000:$ff81] := $42;
+  vramb^ := vram0;
+  screenad(1,1);
+  mem[$c000:$ff81] := $42;
+  vram0 := vramb^;
+  screenad(0,0);
+  mem[$c000:$ff81] := $84;
+  vramb^ := vram0;
+  screenad(1,1);
+  mem[$c000:$ff81] := $84;
+  vram0 := vramb^;
+  screenad(0,0);
+  mem[$c000:$ff81] := $c8;
+  vramb^ := vram0;
+  screenad(1,1);
+  mem[$c000:$ff81] := $c8;
+  vram0 := vramb^;
 
   dispose(vramb);
   screenad(0,0)
@@ -1630,29 +1674,29 @@ begin
   new(vramb);
   screenad(1,1);
   
-              mem[$c000:$ff81] := $1;
-              vramb^ := vram0;
-              screenad(0,0);
-              mem[$c000:$ff81] := $1;
-              vram0 := vramb^;
-              screenad(1,1);
-              mem[$c000:$ff81] := $42;
-              vramb^ := vram0;
-              screenad(0,0);
-              mem[$c000:$ff81] := $42;
-              vram0 := vramb^;
-              screenad(1,1);
-              mem[$c000:$ff81] := $84;
-              vramb^ := vram0;
-              screenad(0,0);
-              mem[$c000:$ff81] := $84;
-              vram0 := vramb^;
-              screenad(1,1);
-              mem[$c000:$ff81] := $c8;
-              vramb^ := vram0;
-              screenad(0,0);
-              mem[$c000:$ff81] := $c8;
-              vram0 := vramb^;
+  mem[$c000:$ff81] := $1;
+  vramb^ := vram0;
+  screenad(0,0);
+  mem[$c000:$ff81] := $1;
+  vram0 := vramb^;
+  screenad(1,1);
+  mem[$c000:$ff81] := $42;
+  vramb^ := vram0;
+  screenad(0,0);
+  mem[$c000:$ff81] := $42;
+  vram0 := vramb^;
+  screenad(1,1);
+  mem[$c000:$ff81] := $84;
+  vramb^ := vram0;
+  screenad(0,0);
+  mem[$c000:$ff81] := $84;
+  vram0 := vramb^;
+  screenad(1,1);
+  mem[$c000:$ff81] := $c8;
+  vramb^ := vram0;
+  screenad(0,0);
+  mem[$c000:$ff81] := $c8;
+  vram0 := vramb^;
 
   dispose(vramb);
   screenad(0,0)
@@ -1671,15 +1715,15 @@ var
   xp,yp,xxp,i,J,JJ : integer;
   fptr,dots,data,nextdata,cc     : byte;
 
-procedure putdata( d : byte );
+  procedure putdata( d : byte );
   begin
     if fptr = 129 then
-      begin
-        {$I-}
-        blockwrite( picfile,fbuf,1 );
-        {$I+}
-        fptr := 1
-      end;
+    begin
+      {$I-}
+      blockwrite( picfile,fbuf,1 );
+      {$I+}
+      fptr := 1
+    end;
     fbuf[fptr] := d;
     fptr := fptr + 1;
   end;
@@ -2126,154 +2170,133 @@ procedure exiffcolor(i:integer);
    end;
 
 
-procedure PSet4Dot(x,y:integer; color:word);
-begin
-	Pset(x  ,y,lo(color) shr 4);
-	Pset(x+1,y,lo(color) and $f);
-	Pset(x+2,y,hi(color) shr 4);
-	Pset(x+3,y,hi(color) and $f);
-end;
-
-function PGet4Dot(x,y:integer):word;
-begin
-	PGet4Dot :=
-		point(x  ,y) shl  4 +
-		point(x+1,y)        +
-		point(x+2,y) shl 12 +
-		point(x+3,y) shl  8   ;
-end;
-
-procedure MagDecode(filename : picflnam);
-type
-	MagHeader	= record
-		header		: byte;
-		machine		: byte;
-		exflag		: byte;
-		scrnmode	: byte;
-		x1			: integer;
-		y1			: integer;
-		x2			: integer;
-		y2			: integer;
-		FlagAofs	: longint;
-		FlagBofs	: longint;
-		FlagBsize	: longint;
-		Pixelofs	: longint;
-		Pixelsize   : longint;
-		Palette	   	: paletteT;
-	end;
-const
-	MagID	: string[8] = 'MAKI02  ';
-	BufSize	= 65520;
-	FbufSize= 80;
+function loadpal( palettefilename : flnam) : boolean;
 var
-	Header	: MagHeader;
-	Buffer	: pointerUnion;
-	FlagA	: pointerUnion;
-	FlagB	: pointerUnion;
-	Pixel	: pointerUnion;
-	fp		: file;
-
-	procedure PixelDecode;
-	const
-		PostblX : array[0..15] of integer =
-			( 0,4,8,16,0,4,0,4,8,0,4,8,0,4,8,0 );
-		PostblY : array[0..15] of integer =
-			( 0,0,0,0,1,1,2,2,2,4,4,4,8,8,8,16 );
-	var	flagbuf	: array[0..FbufSize-1] of byte;
-		flag	: byte;
-		a_bit	: byte;
-		x,y		: integer;
-	begin
-		fillchar(flagbuf,sizeof(flagbuf),0);
-		a_bit:=$80;
-		for y:=Header.y1 to Header.y2 do begin
-			for x:=Header.x1 div 8 to Header.x2 div 8 do
-			begin
-				if (FlagA.bp^ and a_bit)<>0 then begin
-					flagbuf[x]:=flagbuf[x] xor FlagB.bp^;
-					inc(FlagB.ofs);
-				end;
-				a_bit:=a_bit shr 1;
-				if a_bit=0 then	begin
-					a_bit:=$80;
-					inc(FlagA.ofs);
-				end;
-				flag:=flagbuf[x] shr 4;
-				if flag=0 then begin
-					PSet4Dot(x*8,y,pixel.wp^);
-					inc(pixel.ofs,2);
-				end else begin
-					PSet4Dot(x*8,y,
-						PGet4Dot(x*8-PosTblX[flag],y-PosTblY[flag])
-					);
-				end;
-				flag:=flagbuf[x] and $0f;
-				if flag=0 then begin
-					PSet4Dot(x*8+4,y,pixel.wp^);
-					inc(pixel.ofs,2);
-				end else begin
-					PSet4Dot(x*8+4,y,
-						PGet4Dot(x*8+4-PosTblX[flag],y-PosTblY[flag])
-					);
-				end;
-			end;
-		end;
-	end;
-	procedure error(msg:string);
-	begin
-		writeln(msg);
-		{$i-}close(fp);{$i+}
-		FreeMem(Buffer.p,BufSize);
-		exit;
-	end;
-
-var	c		: char;
-	i		: integer;
-	result	: word;
+  palettefile : text;
+  c,r,g,b : byte;
 begin
-	assign(fp,filename); FileMode:=0;
-	{$i-}reset(fp,1);{$i+}
-	if IOresult<>0 then error('File not found.');
-	for i:=1 to 8 do begin;
-		blockread(fp,c,1);
-		if c<>MagID[i] then error('This is not mag data.');
-	end;
-	repeat
-		blockread(fp,c,1);
-	until c=#$1a;
-	blockread(fp,Header,sizeof(Header));
-	with header do begin
-		if MaxAvail<BufSize then
-			error('Not enough core.');
-		if scrnmode and $80 <> 0 then
-			error('256color MAG data not supported.');
-		if x2>=FbufSize*8 then
-			error('Over width. Can not decode data.');
-		if y2>399 then y2:=399;
-		for i:=0 to 15 do begin
-		  Palette[i,GREEN] := palette[i,GREEN] shr 4; palet[i,0]:=Palette[i,GREEN];
-		  Palette[i,RED  ] := palette[i,RED  ] shr 4; palet[i,1]:=Palette[i,RED  ];
-		  Palette[i,BLUE ] := palette[i,BLUE ] shr 4; palet[i,2]:=Palette[i,BLUE ];
-                  setrgbpalette(i,palet[i,0],palet[i,1],palet[i,2]);
-		end;
-	end;
+  loadpal := false ;
+  {$i-}
+  assign(palettefile,palettefilename );
+  reset(palettefile);
+  {$i+}
+  if ioresult <> 0 then
+  begin
+  {$i-}
+    close(palettefile);
+  {$i+}
+    exit;
+  end;
+  while not eof(palettefile) do
+  begin
+    {$i-}
+    readln(palettefile,c,r,g,b);
+    {$i+}
+    if ioresult <> 0 then
+    begin
+      close(palettefile);
+      exit;
+    end;
+    if c <= maxcolor then defpalette(c,r,g,b);
+  end;
+  close(palettefile);
+  loadpal := true;
+  getrgbpalette;
+end;
 
-	GetMem(Buffer.p,BufSize);
-	blockread(fp,Buffer.p^,BufSize,result);
-	if result>=BufSize then
-		error('Buffer full. Can not decode data.');
-	FlagA:=Buffer;
-	FlagB:=Buffer;
-	Pixel:=Buffer;
-	inc(FlagA.ofs,Header.FlagAofs-sizeof(Header));
-	inc(FlagB.ofs,Header.FlagBofs-sizeof(Header));
-	inc(Pixel.ofs,Header.Pixelofs-sizeof(Header));
+function savepal(palettefilename : flnam ): boolean;
+var
+  palettefile : text;
+  color,i : integer;
+   
+begin
+  savepal := false;
+  {$i-}
+  assign( palettefile,palettefilename );
+  rewrite(palettefile);
+  {$i+}
+  if ioresult <> 0 then
+  begin
+    close(palettefile);
+    exit;
+  end;
+  for color := 0 to maxcolor do
+  begin
+    {$i-}
+    write(palettefile,color:3);
+    for i := 0 to 2 do
+      write(palettefile,palet[color,i]:3);
+    writeln(palettefile);
+    {$i+}
+    if ioresult <> 0 then
+    begin
+      close(palettefile);
+      exit;
+    end;
+  end;
+  close(palettefile);
+  savepal := true
+end;
 
-{	PaletteSet(Header.Palette); }
-	PixelDecode;
+function vramsave( name : picflnam ): boolean;
+var
+  f : file;
+  p : ^byte;
+  r : word;
+  vramb : ^vramT;
+begin
+  {$i-}
+  assign(f,name);
+  rewrite(f,32000);
+  {$i+}
+  if ioresult <> 0 then
+  begin
+    vramsave := false;
+    close(f);
+    exit;
+  end;
+  new(vramb);
 
-	FreeMem(Buffer.p,BufSize);
-	close(fp);
+  {$i-}
+  mem[$c000:$ff81] :=  $1; vramb^ := vram0; blockwrite(f,vramb^,1,r);
+  mem[$c000:$ff81] := $42; vramb^ := vram0; blockwrite(f,vramb^,1,r);
+  mem[$c000:$ff81] := $84; vramb^ := vram0; blockwrite(f,vramb^,1,r);
+  mem[$c000:$ff81] := $C8; vramb^ := vram0; blockwrite(f,vramb^,1,r);
+  {$i+}
+  vramsave := ioresult = 0;
+  close(f);
+  dispose(vramb);
+end;
+
+function vramload(name : picflnam ) : boolean;
+var
+  f : file;
+  p : ^byte;
+  r : word;
+  vramb : ^vramT;
+
+begin
+  {$i-}
+  assign(f,name);
+  reset(f,32000);
+  {$i+}
+  if ioresult <> 0 then
+  begin
+    vramload := false;
+    close(f);
+    exit;
+  end;
+  new(vramb);
+
+  {$i-}
+  blockread(f,vramb^,1,r); mem[$c000:$ff81] :=  $1; vram0 := vramb^;
+  blockread(f,vramb^,1,r); mem[$c000:$ff81] := $42; vram0 := vramb^;
+  blockread(f,vramb^,1,r); mem[$c000:$ff81] := $84; vram0 := vramb^;
+  blockread(f,vramb^,1,r); mem[$c000:$ff81] := $C8; vram0 := vramb^;
+  {$i+}
+  vramload := ioresult = 0;
+  close(f);
+  dispose(vramb);
 end;
 
 
