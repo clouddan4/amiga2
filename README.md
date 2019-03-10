@@ -40,6 +40,7 @@ Add feature from 'Deluxe Paint III'
 	- light table
 	- (tool) step Animation
 - and more....
+
 ![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
 
 ### New feature
