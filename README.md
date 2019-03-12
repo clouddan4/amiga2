@@ -8,12 +8,12 @@
 Original source skelton is 'Turbo Graphics (PC-9801) by Anzai Tosihiro' and  
  'Computer Graphics (SMC-777) by Anzai Tosihiro' .  
 
-recently, UNZ(FM-TOWNS emulator) was upgrated, and can running EMM386.EXE .  
+recently, UNZ(FM-TOWNS emulator) was upgrated, and can running 'EMM386.EXE'.  
 so, I can update (& bugfix) this program.   
 
 in the future, I want to run this program on DOSBOX(& TP7).  
- and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim)  
- but I don't have VGA know-how....(T_T)  
+ and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim).
+ but I don't have VGA know-how....(T_T). 
 (once at a time, I bought Delphi3 for windows. and, I was discouraged.)
 
 ---
@@ -21,7 +21,8 @@ in the future, I want to run this program on DOSBOX(& TP7).
 ### Basic feature
 Edit Picture:   640X400 16color  
 Edit Animation: 320X200 16color (on EMS frames)  
-Mix 2Animation: to 320X200 32color IFF(ILBM) pictures  
+Mix 2 Animation: to 320X200 32color IFF(ILBM) pictures (send to Amiga)
+
 ![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
 ![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.gif)
 
@@ -31,26 +32,29 @@ Mix 2Animation: to 320X200 32color IFF(ILBM) pictures
 Add feature from 'Deluxe Paint III'
 - Load & Save Amiga IFF(ILBM) format pictures
 - ToolBox
-	- line, circle, box, curve, airbrush, polygon, fill, ...
+	- line, circle, box, curve, splay, polygon, fill, ...
 - 6 Gradient fill types
 - Symmetry draw
-- Cut Brush
-- Anim Brush
+- Cut Brush (max size 320X200)
+- Anim Brush (use Animaton track on EMS)
 - Animation
-	- light table
+	- light_table(Onion skin)
 	- (tool) step Animation
+- Grid
+- Magnify (editable animframe)
 - and more....
 
 ![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
 
-### New feature
+### New feature (except'DPaint3')
 - 3 Animation tracks
 	- copy, overlay, underlay, masking_mat, ...
-- (PhotoShop like) Mix mode (brush & screen)
-- screen_toon, color_tiling
-- masking
-- tool between Animation
-- change Brush Over/Under by keybord
+- (PhotoShop like) Mix mode (brush to screen)
+- Tone & Tile paint
+- (2value or shade) mask (use spare screen)
+- Tool morphing Animation (between 2 setting same tool)
+	- (Perhaps same tool in PhotonPaint & SpectraColor)
+- change Brush Over/Under (by keybord or Auto setting)
 - and more....
 
 built-in external Anim_geneator module
