@@ -1,5 +1,5 @@
 # amiga2
- (Deluxe Paint III like) animation paint system for UNZ(FM-TOWNS emulator) 
+ (Deluxe Paint III like) animation paint system for UNZ(FM-TOWNS emulator)  
 
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.gif)
 ![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
@@ -8,13 +8,13 @@
 Original source skelton is 'Turbo Graphics (PC-9801) by Anzai Tosihiro' and  
  'Computer Graphics (SMC-777) by Anzai Tosihiro' .  
 
-recently, UNZ(FM-TOWNS emulator) was upgrated, and can running 'EMM386.EXE'. 
-so, I can update (& bugfix) this program. 
+recently, UNZ(FM-TOWNS emulator) was upgrated, and can running 'EMM386.EXE'.  
+so, I can update (& bugfix) this program.  
 
-in the future, I want to run this program on DOSBOX(& TP7). 
-and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim). 
-but I don't have VGA know-how....(T_T). 
-(once at a time, I bought Delphi3 for windows. and, I was discouraged.) 
+in the future, I want to run this program on DOSBOX(& TP7).  
+and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim).  
+but I don't have VGA know-how....(T_T).  
+(once at a time, I bought Delphi3 for windows. and, I was discouraged.)  
 
 ---
 
