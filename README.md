@@ -8,20 +8,20 @@
 Original source skelton is 'Turbo Graphics (PC-9801) by Anzai Tosihiro' and  
  'Computer Graphics (SMC-777) by Anzai Tosihiro' .  
 
-recently, UNZ(FM-TOWNS emulator) was upgrated, and can running 'EMM386.EXE'.  
-so, I can update (& bugfix) this program.   
+recently, UNZ(FM-TOWNS emulator) was upgrated, and can running 'EMM386.EXE'. 
+so, I can update (& bugfix) this program. 
 
-in the future, I want to run this program on DOSBOX(& TP7).  
- and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim).
- but I don't have VGA know-how....(T_T). 
-(once at a time, I bought Delphi3 for windows. and, I was discouraged.)
+in the future, I want to run this program on DOSBOX(& TP7). 
+and, use 256color(or, mix multiple 16color-anims to 256color-GIFAnim). 
+but I don't have VGA know-how....(T_T). 
+(once at a time, I bought Delphi3 for windows. and, I was discouraged.) 
 
 ---
 
 ### Basic feature
 Edit Picture:   640X400 16color  
 Edit Animation: 320X200 16color (on EMS frames)  
-Mix 2 Animation: to 320X200 32color IFF(ILBM) pictures (send to Amiga)
+Mix 2 Animation: to 320X200 32color IFF(ILBM) pictures (send to Amiga) 
 
 ![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
 ![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.gif)
