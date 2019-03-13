@@ -36,7 +36,7 @@ Add feature from 'Deluxe Paint III'
 - 6 Gradient fill types
 - Symmetry draw
 - Cut Brush (max size 320X200)
-- Anim Brush (use Animaton track on EMS)
+- Anim Brush (use Animaton track No.3 on EMS)
 - Animation
 	- light_table(Onion skin)
 	- (tool) step Animation
@@ -46,7 +46,9 @@ Add feature from 'Deluxe Paint III'
 
 ![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
 
-### New feature (except'DPaint3')
+### New feature (except 'DPaint3')
+- Load minor(worldwide) graphic format picture
+	- MAG&FRM(by NEC PC-9801), SMC(by Sony SMC-777C)
 - 3 Animation tracks
 	- copy, overlay, underlay, masking_mat, ...
 - (PhotoShop like) Mix mode (brush to screen)
