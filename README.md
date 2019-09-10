@@ -25,7 +25,7 @@ requirements
 - run setup2.exe(dos command) and keep max EMS-frame
 
 install
-- copy AMIGA2.EXE, AMIGA2.OVR to any directory(et. D:\ATS)
+- copy AMIGA2.EXE, AMIGA2.OVR, PAINTSYS.HLP to any directory(et. D:\ATS)
 - make sub directory 'PST' and copy *.ptn(brush&tone pattern file) to 'PST'
 - make sub directory 'P'(parameter files)
 - make sub directory 'PIC'(default picture files)
