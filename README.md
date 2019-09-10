@@ -18,6 +18,26 @@ but I don't have VGA know-how....(T_T).
 
 ---
 
+### How to RUN this Program
+requirements
+- 'Fujitu FMR-50' or 'FMR-60 with 16dotcard' or 'FM-TOWNS' or 'UNZ(FM-TOWNS emulator)'
+- DOS6.2 and setting mouse driver & EMM386.exe
+- run setup2.exe(dos command) and keep max EMS-frame
+install
+- copy AMIGA2.EXE, AMIGA2.OVR to any directory(et. D:\ATS)
+- make sub directory 'PST' and copy *.ptn(brush&tone pattern file) to 'PST'
+- make sub directory 'P'(parameter files)
+- make sub directory 'PIC'(default picture files)
+- make sub directory 'ANIM'(default anim-frame files)
+run
+- type amiga2 (run 'total system')
+	- type p (run picture operation)
+	- type z (run anim operation)
+- type x (run 'Anime Paint system')
+	- mouse click 'HELP' or '?'
+
+---
+
 ### Basic feature
 Edit Picture:   640X400 16color  
 Edit Animation: 320X200 16color (on EMS frames)  
@@ -41,7 +61,7 @@ Add feature from 'Deluxe Paint III'
 	- light_table(Onion skin)
 	- (tool) step Animation
 - Grid
-- Magnify (editable animframe)
+- Magnify (and edit animframe)
 - and more....
 
 ![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
@@ -52,6 +72,8 @@ Add feature from 'Deluxe Paint III'
 - 3 Animation tracks
 	- copy, overlay, underlay, masking_mat, ...
 - (PhotoShop like) Mix mode (brush to screen)
+- more Gradient style (bevel in, out)
+	- auto convert 16 color gradient style to 2,3,8 color dither pattern
 - Tone & Tile paint
 - (2value or shade) mask (use spare screen)
 - Tool morphing Animation (between 2 setting same tool)
@@ -74,6 +96,7 @@ built-in external Anim_geneator module
 - convert 16color sprite-map-set picture(e.g. TIC-80) <--> Anim Brush
 	- or, add to brush-mode: (sprite)map-Brush
 - Brush-angle auto align along to TOOL-path
+- add spare page to light table
 - Pattern_GEN: thunder-bolt anim-effect
 - Mapping: TimeDisplace-Map
 

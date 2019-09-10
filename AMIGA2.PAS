@@ -1,4 +1,4 @@
-                                   { AMIGA2.PAS   }
+  { AMIGA2.PAS }
 
 { AMIGA Tool Box V2.0 for FMR-50(FM-TOWNS)}
 { Turbo Pascal V6.0 (Overlay System)              }
@@ -92,7 +92,7 @@ begin
     writeln('  [9] fractal          ');
     writeln('  [A] particle         ');
     writeln;
-    writeln('  [\] << paint system toolbox >>');
+    writeln('  [X] << Animation Paint system >>');
     writeln('-------------------------------------');
     writeln('  [P] Picture operation');
     writeln('  [Z] EMS     operation');
@@ -104,7 +104,7 @@ begin
     readln( command );
     command := upcase( command );
     case command of
-      '\' : paintsystem;
+      'X' : paintsystem;
       '!' : begin
               repeat
                 write('Quit! Are you sure? (Y/N):');

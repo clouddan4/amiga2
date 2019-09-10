@@ -56,11 +56,17 @@ const   Dither: array[1..4] of dithtype = (
         ( 7,  8, 10,  5),
         ( 3, 15, 13,  1));
 
-        Dither3: array[1..4] of dithtype = (
+{        Dither3: array[1..4] of dithtype = (
         ( 6,  7,  8,  9),
         ( 5,  0,  1, 10),
         ( 4,  3,  2, 11),
-        (15, 14, 13, 12));
+        (15, 14, 13, 12)); }
+
+        Dither3: array[1..4] of dithtype = (
+        (12,  5,  6, 13),
+        ( 4,  0,  1,  7),
+        (11,  3,  2,  8),
+        (15, 10,  9, 14));
 
 var
 	YPOSTBL		: array [0..408] of word;
