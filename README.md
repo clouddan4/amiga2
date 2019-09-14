@@ -20,19 +20,19 @@ but I don't have VGA know-how....(T_T).
 
 ### How to RUN this Program
 requirements
-- 'Fujitu FMR-50' or 'FMR-60 with 16dotcard' or 'FM-TOWNS' or 'UNZ(FM-TOWNS emulator)'
+- 'Fujitsu FMR-50' or 'FMR-60 with 16dotcard' or 'FM-TOWNS' or 'UNZ(FM-TOWNS emulator)'
 - DOS6.2 and setting mouse driver & EMM386.exe
 - run setup2.exe(dos command) and keep max EMS-frame
 
 install
-- copy AMIGA2.EXE, AMIGA2.OVR, PAINTSYS.HLP to any directory(et. D:\ATS)
+- copy AMIGA2.EXE, AMIGA2.OVR, PAINTSYS.HLP to any directory(e.g. D:\ATS)
 - make sub directory 'PST' and copy *.ptn(brush&tone pattern file) to 'PST'
 - make sub directory 'P'(parameter files)
 - make sub directory 'PIC'(default picture files)
 - make sub directory 'ANIM'(default anim-frame files)
 
 run
-- type amiga2 (run 'total system')
+- execute amiga2.exe (run 'total system')
 	- type p (run picture operation)
 	- type z (run anim operation)
 - type x (run 'Anime Paint system')
