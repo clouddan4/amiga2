@@ -1,8 +1,8 @@
 # amiga2
  (Deluxe Paint III like) animation paint system for UNZ(FM-TOWNS emulator)  
 
-![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.gif)
-![スイカの行進](https://github.com/clouddan4/amiga2/blob/master/SUIKA.png)
+![スイカの行進](images/SUIKA.gif)
+![スイカの行進](images/SUIKA.png)
 
 20 years ago, I used Amiga500,Amiga4000,X68000 and FM-Towns(This program).  
 Original source skelton is 'Turbo Graphics (PC-9801) by Anzai Tosihiro' and  
