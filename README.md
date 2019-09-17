@@ -21,7 +21,9 @@ but I don't have VGA know-how....(T_T).
 ### How to RUN this Program
 requirements
 - 'Fujitsu FMR-50' or 'FMR-60 with 16dotcard' or 'FM-TOWNS' or 'UNZ(FM-TOWNS emulator)'
-- DOS6.2 and setting mouse driver & EMM386.exe
+- DOS6.2
+	- config.sys: HIMEN.SYS, EMM386.EXE, GDS.SYS
+	- autoexec.bat: MOUSE.COM
 - run setup2.exe(dos command) and keep max EMS-frame
 
 install
@@ -32,7 +34,7 @@ install
 - make sub directory 'ANIM'(default anim-frame files)
 
 run
-- execute amiga2.exe (run 'total system')
+- run amiga2.exe (run 'total system')
 	- type p (run picture operation)
 	- type z (run anim operation)
 - type x (run 'Anime Paint system')
@@ -45,11 +47,11 @@ Edit Picture:   640X400 16color
 Edit Animation: 320X200 16color (on EMS frames)  
 Mix 2 Animation: to 320X200 32color IFF(ILBM) pictures (send to Amiga) 
 
-![16color](https://github.com/clouddan4/amiga2/blob/master/16color.png)
-![32color](https://github.com/clouddan4/amiga2/blob/master/32COLOR.gif)
+![16color](images/16color.png)
+![32color](images/32COLOR.gif)
 
-![TREE4](https://github.com/clouddan4/amiga2/blob/master/TREE4.gif)
-![TREE4](https://github.com/clouddan4/amiga2/blob/master/DP3_TREE.png)
+![TREE4](images/TREE4.gif)
+![TREE4](images/DP3_TREE.png)
 
 Add feature from 'Deluxe Paint III'
 - Load & Save Amiga IFF(ILBM) format pictures
@@ -66,7 +68,7 @@ Add feature from 'Deluxe Paint III'
 - Magnify (and edit animframe)
 - and more....
 
-![16color](https://github.com/clouddan4/amiga2/blob/master/submenu.png)
+![16color](images/submenu.png)
 
 ### New feature (except 'DPaint3')
 - Load minor(worldwide) graphic format picture
